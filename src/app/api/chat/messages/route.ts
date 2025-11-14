@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const messageInclude = {
+  const messageInclude: Record<string, any> = {
     author: true,
     _count: { select: { reactions: true } },
   };
