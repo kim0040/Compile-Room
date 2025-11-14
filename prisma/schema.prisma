@@ -44,6 +44,8 @@ model User {
   receivedMessages DirectMessage[] @relation("ReceivedMessages")
   accounts     Account[]
   sessions     Session[]
+  postComments PostComment[]
+  notifications Notification[]
 }
 
 model Material {
