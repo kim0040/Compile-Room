@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { createNotification } from "@/lib/notifications";
+import type { Prisma } from "@prisma/client";
 
 type Params = Promise<{ id: string }>;
 
@@ -97,7 +98,7 @@ export async function POST(
   let likeAdded = false;
   let favoriteAdded = false;
   try {
-    await prisma.$transaction(async (tx: typeof prisma) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       if (kind === "like") {
         const existing = await tx.postLike.findUnique({
           where: { postId_userId: { postId, userId: session.user.id } },
