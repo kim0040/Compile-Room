@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
   }
 
   const messageInclude: Record<string, any> = {
-    author: true,
+    author: { select: { name: true, classYear: true } },
     _count: { select: { reactions: true } },
   };
 
