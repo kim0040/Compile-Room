@@ -6,6 +6,10 @@ import { encryptText, decryptText } from "@/lib/crypto";
 import { decryptClassYear } from "@/lib/personal-data";
 import { createNotification } from "@/lib/notifications";
 
+type DirectMessageWithUsers = Awaited<
+  ReturnType<typeof prisma.directMessage.findMany>
+>[number];
+
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
@@ -36,7 +40,7 @@ export async function GET(request: NextRequest) {
   });
 
   return NextResponse.json({
-    messages: messages.map((message) => ({
+    messages: messages.map((message: DirectMessageWithUsers) => ({
       id: message.id,
       content: message.deletedAt
         ? "(삭제된 메시지입니다)"

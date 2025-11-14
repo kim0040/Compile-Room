@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
   });
 
   return NextResponse.json({
-    users: users.map((user) => ({
+    users: users.map((user: (typeof users)[number]) => ({
       ...user,
       classYear: decryptClassYear(user.classYear),
     })),

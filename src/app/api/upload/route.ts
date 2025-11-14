@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
-import { MaterialType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { saveUpload } from "@/lib/utils";
 import { authOptions } from "@/lib/auth";
 import { rateLimit } from "@/lib/ratelimit";
+import {
+  MaterialTypeEnum,
+  isMaterialType,
+  type MaterialType,
+} from "@/types/material-type";
 
 const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 const ALLOWED_TYPES = [
@@ -74,8 +78,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const materialType =
-    MaterialType[typeValue as keyof typeof MaterialType] ?? MaterialType.OTHER;
+  const materialType: MaterialType = isMaterialType(typeValue)
+    ? typeValue
+    : MaterialTypeEnum.OTHER;
 
   const uploadResult = await saveUpload(file);
 

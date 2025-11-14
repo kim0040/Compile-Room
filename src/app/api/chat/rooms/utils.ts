@@ -1,6 +1,16 @@
-import type { ChatRoom } from "@prisma/client";
-
-export type RawRoom = ChatRoom & {
+export type RawRoom = {
+  id: number;
+  name: string;
+  description: string | null;
+  isPrivate: boolean;
+  readOnly: boolean;
+  maxMembers: number | null;
+  requireLogin: boolean;
+  passwordHash: string | null;
+  isDefault: boolean;
+  ownerId: number;
+  createdAt: Date;
+  updatedAt: Date;
   owner: { name: string };
   _count: { members: number; messages: number };
 };

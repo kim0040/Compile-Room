@@ -28,7 +28,7 @@ export default async function UsersPage() {
     },
   });
 
-  const sanitized = users.map((user) => ({
+  const sanitized = users.map((user: any) => ({
     ...user,
     classYear: decryptClassYear(user.classYear),
   }));
@@ -45,7 +45,7 @@ export default async function UsersPage() {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {sanitized.map((user) => (
+        {sanitized.map((user: any) => (
           <Link
             key={user.id}
             href={`/users/${user.id}`}

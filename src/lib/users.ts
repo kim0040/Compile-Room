@@ -18,7 +18,7 @@ export async function getAllUsers() {
       createdAt: true,
     },
   });
-  return users.map((user) => sanitizeUser(user));
+  return users.map((user: any) => sanitizeUser(user));
 }
 
 export async function getUserById(id: number) {

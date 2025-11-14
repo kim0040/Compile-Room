@@ -75,7 +75,7 @@ export async function GET(
       maxMembers: room.maxMembers,
       memberCount: room._count.members,
     },
-    members: room.members.map((member) => ({
+    members: room.members.map((member: (typeof room.members)[number]) => ({
       id: member.userId,
       name: member.user.name,
       role: member.role,

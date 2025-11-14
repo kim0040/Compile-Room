@@ -88,7 +88,9 @@ export async function DELETE() {
     }
   }
 
-  const materialIds = userMaterials.map((m) => m.id);
+  const materialIds = userMaterials.map(
+    (m: (typeof userMaterials)[number]) => m.id,
+  );
   if (materialIds.length > 0) {
     await prisma.comment.deleteMany({
       where: { materialId: { in: materialIds } },

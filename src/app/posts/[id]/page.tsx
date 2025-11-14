@@ -111,7 +111,7 @@ export default async function PostDetail({ params }: { params: Params }) {
         </div>
         <PostPreferences postId={post.id} />
         <div className="prose prose-sm mt-6 max-w-none text-text-primary-light dark:prose-invert dark:text-text-primary-dark">
-          {post.content.split("\n").map((line, index) => (
+          {post.content.split("\n").map((line: string, index: number) => (
             <p key={index}>{line || <>&nbsp;</>}</p>
           ))}
         </div>
@@ -127,7 +127,7 @@ export default async function PostDetail({ params }: { params: Params }) {
             </p>
           ) : (
             <ul className="space-y-4">
-              {post.comments.map((comment) => (
+              {post.comments.map((comment: (typeof post.comments)[number]) => (
                 <li
                   key={comment.id}
                   className="rounded-2xl border border-border-light/60 bg-background-light/80 p-4 dark:border-border-dark/60 dark:bg-background-dark/40"

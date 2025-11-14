@@ -187,7 +187,7 @@ export default async function ProfilePage() {
                 </p>
               ) : (
                 <ul className="mt-2 space-y-2 text-text-secondary-light dark:text-text-secondary-dark">
-                  {likedMaterials.map((item) => (
+                  {likedMaterials.map((item: any) => (
                     <li
                       key={`liked-material-${item.id}`}
                       className="rounded-2xl border border-border-light/60 p-3 dark:border-border-dark/60"
@@ -213,7 +213,7 @@ export default async function ProfilePage() {
                 </p>
               ) : (
                 <ul className="mt-2 space-y-2 text-text-secondary-light dark:text-text-secondary-dark">
-                  {likedPosts.map((item) => (
+                  {likedPosts.map((item: any) => (
                     <li
                       key={`liked-post-${item.id}`}
                       className="rounded-2xl border border-border-light/60 p-3 dark:border-border-dark/60"
@@ -246,7 +246,7 @@ export default async function ProfilePage() {
                 </p>
               ) : (
                 <ul className="mt-2 space-y-2 text-text-secondary-light dark:text-text-secondary-dark">
-                  {favoriteMaterials.map((item) => (
+                  {favoriteMaterials.map((item: any) => (
                     <li
                       key={`fav-material-${item.id}`}
                       className="rounded-2xl border border-border-light/60 p-3 dark:border-border-dark/60"
@@ -272,7 +272,7 @@ export default async function ProfilePage() {
                 </p>
               ) : (
                 <ul className="mt-2 space-y-2 text-text-secondary-light dark:text-text-secondary-dark">
-                  {favoritePosts.map((item) => (
+                  {favoritePosts.map((item: any) => (
                     <li
                       key={`fav-post-${item.id}`}
                       className="rounded-2xl border border-border-light/60 p-3 dark:border-border-dark/60"
@@ -303,7 +303,7 @@ export default async function ProfilePage() {
             </p>
           ) : (
             <ul className="space-y-3 text-sm text-text-secondary-light dark:text-text-secondary-dark">
-              {recentMaterials.map((item) => (
+              {recentMaterials.map((item: any) => (
                 <li key={item.id} className="rounded-2xl border border-border-light/60 p-3 dark:border-border-dark/60">
                   <p className="font-semibold text-text-primary-light dark:text-text-primary-dark">
                     {item.title}
@@ -327,7 +327,7 @@ export default async function ProfilePage() {
             </p>
           ) : (
             <ul className="space-y-3 text-sm text-text-secondary-light dark:text-text-secondary-dark">
-              {recentPosts.map((item) => (
+              {recentPosts.map((item: any) => (
                 <li key={item.id} className="rounded-2xl border border-border-light/60 p-3 dark:border-border-dark/60">
                   <p className="font-semibold text-text-primary-light dark:text-text-primary-dark">
                     {item.title}

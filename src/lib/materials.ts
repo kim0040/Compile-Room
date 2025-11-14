@@ -1,17 +1,44 @@
-import { MaterialType, Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 import { decryptClassYear } from "./personal-data";
+import {
+  MaterialType,
+  MaterialTypeEnum,
+  isMaterialType,
+} from "@/types/material-type";
 
-export type MaterialWithAuthor = Prisma.MaterialGetPayload<{
-  include: { author: true; _count: { select: { comments: true } } };
-}>;
+type AuthorInfo = {
+  id: number;
+  name: string;
+  classYear: string | null;
+};
 
-export type MaterialDetail = Prisma.MaterialGetPayload<{
-  include: {
-    author: true;
-    comments: { include: { author: true } };
-  };
-}>;
+export type MaterialWithAuthor = {
+  id: number;
+  title: string;
+  description: string;
+  subject: string;
+  category: string;
+  type: MaterialType;
+  downloadCount: number;
+  favoriteCount: number;
+  createdAt: Date;
+  authorId: number;
+  author: AuthorInfo;
+  _count: { comments: number };
+};
+
+export type MaterialDetail = MaterialWithAuthor & {
+  fileUrl: string;
+  fileName: string;
+  fileType: string | null;
+  heroImageUrl: string | null;
+  comments: Array<{
+    id: number;
+    content: string;
+    createdAt: Date;
+    author: AuthorInfo;
+  }>;
+};
 
 const baseMaterialInclude = {
   author: true,
@@ -25,7 +52,9 @@ function sanitizeAuthor<T extends { classYear?: string | null }>(author: T) {
   };
 }
 
-function sanitizeMaterial<T extends { author: any; comments?: any[] }>(material: T) {
+function sanitizeMaterial<T extends { author: any; comments?: any[] }>(
+  material: T,
+) {
   const withAuthor = {
     ...material,
     author: sanitizeAuthor(material.author),
@@ -39,56 +68,39 @@ function sanitizeMaterial<T extends { author: any; comments?: any[] }>(material:
   return withAuthor;
 }
 
-export async function getLatestMaterials(
-  keyword?: string,
-  take = 6,
-): Promise<MaterialWithAuthor[]> {
-  return prisma.material
-    .findMany({
-      where: keyword
-        ? {
-            OR: [
-              { title: { contains: keyword } },
-              { description: { contains: keyword } },
-              { subject: { contains: keyword } },
-            ],
-          }
-        : undefined,
-      include: baseMaterialInclude,
-      orderBy: { createdAt: "desc" },
-      take,
-    })
-    .then((materials) =>
-      (materials as MaterialWithAuthor[]).map((material) =>
-        sanitizeMaterial(material),
-      ),
-    );
+export async function getLatestMaterials(keyword?: string, take = 6) {
+  const materials = await prisma.material.findMany({
+    where: keyword
+      ? {
+          OR: [
+            { title: { contains: keyword } },
+            { description: { contains: keyword } },
+            { subject: { contains: keyword } },
+          ],
+        }
+      : undefined,
+    include: baseMaterialInclude,
+    orderBy: { createdAt: "desc" },
+    take,
+  });
+  return materials.map((material: any) => sanitizeMaterial(material)) as MaterialWithAuthor[];
 }
 
-export async function getPopularMaterials(
-  take = 4,
-): Promise<MaterialWithAuthor[]> {
-  return prisma.material
-    .findMany({
-      include: baseMaterialInclude,
-      orderBy: [
-        { favoriteCount: "desc" },
-        { downloadCount: "desc" },
-        { createdAt: "desc" },
-      ],
-      take,
-    })
-    .then((materials) =>
-      (materials as MaterialWithAuthor[]).map((material) =>
-        sanitizeMaterial(material),
-      ),
-    );
+export async function getPopularMaterials(take = 4) {
+  const materials = await prisma.material.findMany({
+    include: baseMaterialInclude,
+    orderBy: [
+      { favoriteCount: "desc" },
+      { downloadCount: "desc" },
+      { createdAt: "desc" },
+    ],
+    take,
+  });
+  return materials.map((material: any) => sanitizeMaterial(material)) as MaterialWithAuthor[];
 }
 
-export async function getMaterialById(
-  id: number,
-): Promise<MaterialDetail | null> {
-  const material = (await prisma.material.findUnique({
+export async function getMaterialById(id: number) {
+  const material = await prisma.material.findUnique({
     where: { id },
     include: {
       author: true,
@@ -97,7 +109,7 @@ export async function getMaterialById(
         orderBy: { createdAt: "desc" },
       },
     },
-  })) as MaterialDetail | null;
+  });
   return material ? (sanitizeMaterial(material) as MaterialDetail) : null;
 }
 
@@ -131,8 +143,8 @@ export async function getMaterialStats() {
   };
 }
 
-export function isValidMaterialType(
-  value: string,
-): value is keyof typeof MaterialType {
-  return Object.prototype.hasOwnProperty.call(MaterialType, value);
+export function isValidMaterialType(value: string): value is MaterialType {
+  return isMaterialType(value);
 }
+
+export const MATERIAL_TYPE_LIST = Object.values(MaterialTypeEnum);

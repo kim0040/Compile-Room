@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  const materials = materialsRaw.map((material) => ({
+  const materials = materialsRaw.map((material: (typeof materialsRaw)[number]) => ({
     ...material,
     author: {
       ...material.author,

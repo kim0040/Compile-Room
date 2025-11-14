@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
@@ -9,6 +8,10 @@ import { rateLimit } from "@/lib/ratelimit";
 import { getClientIp } from "@/lib/request-ip";
 import { decryptClassYear } from "@/lib/personal-data";
 import { getUserCode } from "@/lib/user-tag";
+
+type ChatMessageWithMeta = Awaited<
+  ReturnType<typeof prisma.chatMessage.findMany>
+>[number];
 
 /**
  * GET /api/chat/messages
@@ -60,7 +63,7 @@ export async function GET(request: NextRequest) {
   });
 
   return NextResponse.json({
-    messages: messages.map((message) => ({
+    messages: messages.map((message: ChatMessageWithMeta) => ({
       id: message.id,
       content: message.deletedAt
         ? "(삭제된 메시지입니다)"

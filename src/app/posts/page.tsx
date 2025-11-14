@@ -7,6 +7,22 @@ import { getServerAuthSession } from "@/lib/auth";
 import { ChatRoom } from "@/components/chat-room";
 
 const POST_CATEGORIES = ["전체", "전공", "교양", "공지", "취업/진로", "스터디", "기타"];
+type PostRecord = {
+  id: number;
+  title: string;
+  content: string;
+  category: string | null;
+  tags?: string | null;
+  createdAt: Date;
+  viewCount: number;
+  authorId: number;
+  isExample: boolean;
+  author: {
+    id: number;
+    name: string;
+    classYear: string | null;
+  };
+};
 
 type SearchParams = Promise<{ category?: string }>;
 
@@ -23,7 +39,7 @@ export default async function PostsPage({
       activeCategory !== "전체" ? { category: activeCategory } : undefined,
     include: { author: true },
     orderBy: { createdAt: "desc" },
-  });
+  }) as Promise<PostRecord[]>;
   const [session, posts] = await Promise.all([sessionPromise, postsPromise]);
 
   // 게시판 페이지에서도 즉시 채팅할 수 있도록 기본 채팅방을 미리 확보

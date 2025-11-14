@@ -17,6 +17,7 @@ import { getUserCode } from "@/lib/user-tag";
 
 type SearchParams = Promise<{ keyword?: string | string[] }>;
 const FALL_TERM_END = "2025-12-20T00:00:00+09:00";
+type LatestPost = Awaited<ReturnType<typeof getLatestPosts>>[number];
 
 export default async function Home({
   searchParams,
@@ -234,7 +235,7 @@ export default async function Home({
           </p>
         ) : (
           <ul className="mt-4 space-y-4">
-            {latestPosts.map((post) => (
+            {latestPosts.map((post: LatestPost) => (
               <li
                 key={post.id}
                 className="rounded-2xl border border-border-light/60 bg-background-light/80 p-4 transition hover:border-primary/40 hover:shadow-md dark:border-border-dark/70 dark:bg-background-dark/50"

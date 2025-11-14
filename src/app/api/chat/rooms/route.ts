@@ -18,14 +18,17 @@ export async function GET() {
         _count: { select: { members: true, messages: true } },
       },
       orderBy: { createdAt: "asc" },
-    }),
+    }) as Promise<RawRoom[]>,
     prisma.chatRoomMember.findMany({
       where: { userId: session.user.id },
     }),
   ]);
 
-  const memberRoleMap = new Map(
-    memberships.map((member) => [member.roomId, member.role]),
+  const memberRoleMap = new Map<number, string | undefined>(
+    memberships.map((member: (typeof memberships)[number]) => [
+      member.roomId,
+      member.role,
+    ]),
   );
 
   return NextResponse.json({

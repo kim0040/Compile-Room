@@ -3,6 +3,21 @@ import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { ChatClient } from "@/components/chat/chat-client";
 
+type RoomSummary = {
+  id: number;
+  name: string;
+  description: string | null;
+  isPrivate: boolean;
+  isDefault: boolean;
+  readOnly: boolean;
+  maxMembers: number | null;
+  ownerName: string;
+  memberCount: number;
+  messageCount: number;
+  isMember: boolean;
+  role: string | null;
+};
+
 export default async function ChatPage() {
   const session = await getServerAuthSession();
   if (!session) {
@@ -21,7 +36,9 @@ export default async function ChatPage() {
     where: { userId: session.user.id },
   });
 
-  const defaultRoomRecord = roomsRaw.find((room) => room.isDefault);
+  const defaultRoomRecord = roomsRaw.find(
+    (room: (typeof roomsRaw)[number]) => room.isDefault,
+  );
   if (defaultRoomRecord) {
     await prisma.chatRoomMember.upsert({
       where: {
@@ -41,24 +58,29 @@ export default async function ChatPage() {
     });
   }
 
-  const memberRoleMap = new Map(
-    memberships.map((member) => [member.roomId, member.role]),
+  const memberRoleMap = new Map<number, string | undefined>(
+    memberships.map((member: (typeof memberships)[number]) => [
+      member.roomId,
+      member.role,
+    ]),
   );
 
-  const rooms = roomsRaw.map((room) => ({
-    id: room.id,
-    name: room.name,
-    description: room.description,
-    isPrivate: room.isPrivate,
-    isDefault: room.isDefault,
+  const rooms: RoomSummary[] = roomsRaw.map(
+    (room: (typeof roomsRaw)[number]) => ({
+      id: room.id,
+      name: room.name,
+      description: room.description,
+      isPrivate: room.isPrivate,
+      isDefault: room.isDefault,
     readOnly: room.readOnly,
     maxMembers: room.maxMembers,
     ownerName: room.owner.name,
     memberCount: room._count.members,
     messageCount: room._count.messages,
     isMember: memberRoleMap.has(room.id),
-    role: memberRoleMap.get(room.id) ?? null,
-  }));
+      role: memberRoleMap.get(room.id) ?? null,
+    }),
+  );
 
   const defaultRoom =
     rooms.find((room) => room.isDefault && room.isMember) ??
