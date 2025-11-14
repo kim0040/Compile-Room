@@ -41,6 +41,16 @@ export async function POST(
   const body = await request.json().catch(() => ({}));
   const password = body?.password;
 
+  if (
+    room.maxMembers &&
+    room._count.members >= room.maxMembers
+  ) {
+    return NextResponse.json(
+      { message: "채팅방 정원이 가득 찼습니다." },
+      { status: 403 },
+    );
+  }
+
   if (room.isPrivate) {
     if (!room.passwordHash) {
       return NextResponse.json(
@@ -72,12 +82,3 @@ export async function POST(
 
   return NextResponse.json({ joined: true });
 }
-  if (
-    room.maxMembers &&
-    room._count.members >= room.maxMembers
-  ) {
-    return NextResponse.json(
-      { message: "채팅방 정원이 가득 찼습니다." },
-      { status: 403 },
-    );
-  }
