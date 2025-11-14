@@ -73,10 +73,7 @@ export default async function MaterialDetail({
               {material.downloadCount.toLocaleString()}
             </p>
           </div>
-          <MaterialDownloadButton
-            materialId={material.id}
-            fileUrl={material.fileUrl}
-          />
+          <MaterialDownloadButton materialId={material.id} />
         </div>
         <p className="mt-6 text-base leading-relaxed text-text-secondary-light dark:text-text-secondary-dark">
           {material.description}
@@ -115,7 +112,7 @@ export default async function MaterialDetail({
         <div className="mt-8">
           <PreviewPanel
             fileType={material.fileType}
-            fileUrl={material.fileUrl}
+            materialId={material.id}
             title={material.title}
           />
         </div>
@@ -168,27 +165,24 @@ export default async function MaterialDetail({
 
 function PreviewPanel({
   fileType,
-  fileUrl,
+  materialId,
   title,
 }: {
   fileType: string | null;
-  fileUrl: string;
+  materialId: number;
   title: string;
 }) {
   const lowerType = fileType?.toLowerCase() ?? "";
-  const ext = fileUrl.split(".").pop()?.toLowerCase();
-  const isImage =
-    lowerType.startsWith("image/") ||
-    (lowerType === "" && ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext));
-  const isPdf =
-    lowerType === "application/pdf" || (lowerType === "" && ext === "pdf");
+  const isImage = lowerType.startsWith("image/");
+  const isPdf = lowerType === "application/pdf";
+  const previewUrl = `/api/materials/${materialId}/file?inline=1`;
 
   if (isImage) {
     return (
       <div className="rounded-2xl border border-border-light/60 bg-background-light/60 dark:border-border-dark/70 dark:bg-background-dark/40">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={fileUrl}
+          src={previewUrl}
           alt={`${title} 미리보기 이미지`}
           className="h-auto max-h-[28rem] w-full object-contain"
         />
@@ -200,7 +194,7 @@ function PreviewPanel({
     return (
       <div className="rounded-2xl border border-border-light/60 bg-background-light/60 dark:border-border-dark/70 dark:bg-background-dark/40">
         <object
-          data={fileUrl}
+          data={previewUrl}
           type="application/pdf"
           className="h-[28rem] w-full rounded-2xl"
         >

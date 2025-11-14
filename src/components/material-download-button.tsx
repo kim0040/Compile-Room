@@ -4,10 +4,9 @@ import { useState } from "react";
 
 type Props = {
   materialId: number;
-  fileUrl: string;
 };
 
-export function MaterialDownloadButton({ materialId, fileUrl }: Props) {
+export function MaterialDownloadButton({ materialId }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -18,16 +17,18 @@ export function MaterialDownloadButton({ materialId, fileUrl }: Props) {
       await fetch(`/api/materials/${materialId}/download`, {
         method: "POST",
       });
-    } catch (err) {
-      setError("다운로드 통계 업데이트에 실패했습니다.");
-    } finally {
-      setLoading(false);
+
+      const fileEndpoint = `/api/materials/${materialId}/file`;
       const link = document.createElement("a");
-      link.href = fileUrl;
+      link.href = fileEndpoint;
       link.download = "";
       document.body.appendChild(link);
       link.click();
       link.remove();
+    } catch (err) {
+      setError("다운로드 통계 업데이트에 실패했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 

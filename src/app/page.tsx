@@ -5,6 +5,8 @@ import {
   getMaterialStats,
   getPopularMaterials,
 } from "@/lib/materials";
+import { getLatestPosts } from "@/lib/posts";
+import { formatRelativeTime } from "@/lib/format";
 import { MaterialSearchBar } from "@/components/material-search-bar";
 import { MaterialCard } from "@/components/material-card";
 import { PopularMaterialCard } from "@/components/popular-material-card";
@@ -25,11 +27,13 @@ export default async function Home({
   const keyword = Array.isArray(keywordParam)
     ? keywordParam[0] ?? ""
     : keywordParam ?? "";
-  const [latestMaterials, popularMaterials, stats] = await Promise.all([
-    getLatestMaterials(keyword),
-    getPopularMaterials(),
-    getMaterialStats(),
-  ]);
+  const [latestMaterials, popularMaterials, stats, latestPosts] =
+    await Promise.all([
+      getLatestMaterials(keyword),
+      getPopularMaterials(),
+      getMaterialStats(),
+      getLatestPosts(),
+    ]);
   const heroMaterials = popularMaterials.slice(0, 3);
 
   return (
@@ -178,7 +182,7 @@ export default async function Home({
           )}
         </div>
 
-        <div className="rounded-3xl border border-border-light/70 bg-surface-light p-6 shadow-sm dark:border-border-dark/70 dark:bg-surface-dark">
+      <div className="rounded-3xl border border-border-light/70 bg-surface-light p-6 shadow-sm dark:border-border-dark/70 dark:bg-surface-dark">
           <h3 className="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">
             인기 자료
           </h3>
@@ -195,6 +199,61 @@ export default async function Home({
             ))}
           </ul>
         </div>
+      </section>
+
+      <section className="rounded-3xl border border-border-light/70 bg-surface-light p-6 shadow-sm dark:border-border-dark/70 dark:bg-surface-dark">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-primary">게시판</p>
+            <h2 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">
+              최신 게시글
+            </h2>
+          </div>
+          <Link
+            href="/posts"
+            className="text-sm font-semibold text-primary"
+          >
+            전체 보기 →
+          </Link>
+        </div>
+        {latestPosts.length === 0 ? (
+          <p className="mt-4 rounded-2xl border border-dashed border-border-light/70 bg-background-light/50 p-4 text-sm text-text-secondary-light dark:border-border-dark/70 dark:bg-background-dark/30 dark:text-text-secondary-dark">
+            아직 게시글이 없습니다. 첫 글을 작성해보세요!
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-4">
+            {latestPosts.map((post) => (
+              <li
+                key={post.id}
+                className="rounded-2xl border border-border-light/60 bg-background-light/80 p-4 transition hover:border-primary/40 hover:shadow-md dark:border-border-dark/70 dark:bg-background-dark/50"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    href={`/posts/${post.id}`}
+                    className="text-lg font-semibold text-text-primary-light hover:text-primary dark:text-text-primary-dark"
+                  >
+                    {post.title}
+                  </Link>
+                  {post.isExample && (
+                    <span className="rounded-full bg-amber-100 px-3 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/20 dark:text-amber-200">
+                      (예제)
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 line-clamp-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                  {post.content}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                  <span>{post.author.name}</span>
+                  <span className="rounded-full bg-primary/10 px-3 py-0.5 text-primary">
+                    {post.category}
+                  </span>
+                  <span>{formatRelativeTime(post.createdAt)}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );
