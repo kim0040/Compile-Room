@@ -8,6 +8,7 @@ type Message = {
   content: string;
   createdAt: string;
   isMine: boolean;
+  deleted: boolean;
 };
 
 type Props = {
@@ -64,12 +65,26 @@ export function DirectMessagePanel({ counterpartId, counterpartName }: Props) {
     mutate();
   };
 
+  const handleDelete = async (messageId: number) => {
+    const response = await fetch(`/api/messages/${messageId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      setError(payload.message ?? "쪽지 삭제에 실패했습니다.");
+      return;
+    }
+    setError("");
+    mutate();
+  };
+
   return (
     <div className="flex flex-col rounded-3xl border border-border-light/70 bg-background-light/70 p-4 dark:border-border-dark/70 dark:bg-background-dark/40">
       <div className="mb-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
         {counterpartName}님과의 대화
       </div>
-      <div className="h-64 overflow-y-auto rounded-2xl border border-border-light/60 bg-white/70 p-3 dark:border-border-dark/60 dark:bg-black/10">
+      <div className="h-64 overflow-y-auto rounded-2xl border border-border-light/60 bg-surface-light/80 p-3 dark:border-border-dark/60 dark:bg-surface-dark/60">
         {(data?.messages ?? []).map((message) => (
           <div
             key={message.id}
@@ -77,15 +92,26 @@ export function DirectMessagePanel({ counterpartId, counterpartName }: Props) {
               message.isMine ? "justify-end" : "justify-start"
             }`}
           >
-            <span
-              className={`max-w-[70%] rounded-2xl px-3 py-2 text-sm ${
-                message.isMine
-                  ? "bg-primary text-white"
-                  : "bg-background-light text-text-primary-light dark:bg-background-dark/80 dark:text-text-primary-dark"
-              }`}
-            >
-              {message.content}
-            </span>
+            <div className="flex flex-col items-end">
+              <span
+                className={`max-w-[70%] rounded-2xl px-3 py-2 text-sm ${
+                  message.isMine
+                    ? "bg-primary text-white"
+                    : "bg-background-light text-text-primary-light dark:bg-background-dark/80 dark:text-text-primary-dark"
+                } ${message.deleted ? "italic opacity-70" : ""}`}
+              >
+                {message.content}
+              </span>
+              {message.isMine && !message.deleted && (
+                <button
+                  type="button"
+                  onClick={() => handleDelete(message.id)}
+                  className="mt-1 text-[11px] text-red-500"
+                >
+                  삭제
+                </button>
+              )}
+            </div>
           </div>
         ))}
         {data?.messages?.length === 0 && (
@@ -100,7 +126,7 @@ export function DirectMessagePanel({ counterpartId, counterpartName }: Props) {
           value={content}
           onChange={(event) => setContent(event.target.value)}
           placeholder="메시지를 입력하세요"
-          className="flex-1 rounded-2xl border border-border-light/70 bg-white px-4 py-2 text-sm text-text-primary-light outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/30 dark:border-border-dark/70 dark:bg-background-dark dark:text-text-primary-dark"
+          className="flex-1 rounded-2xl border border-border-light/70 bg-surface-light px-4 py-2 text-sm text-text-primary-light outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/30 dark:border-border-dark/70 dark:bg-surface-dark dark:text-text-primary-dark"
         />
         <button
           type="submit"

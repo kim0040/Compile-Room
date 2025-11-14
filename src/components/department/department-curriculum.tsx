@@ -69,7 +69,7 @@ export function DepartmentCurriculumSection({
               }`}
             >
               <p className="text-sm font-semibold text-primary">
-                {curriculum.year}학년 · {curriculum.title}
+                {curriculum.year}학년 {curriculum.title}
               </p>
               <p className="mt-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
                 {curriculum.summary}

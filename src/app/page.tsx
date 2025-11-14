@@ -13,6 +13,7 @@ import { PopularMaterialCard } from "@/components/popular-material-card";
 import { StatsGrid } from "@/components/stats-grid";
 import { IntroDialog } from "@/components/intro-dialog";
 import { CountdownTimer } from "@/components/countdown-timer";
+import { getUserCode } from "@/lib/user-tag";
 
 type SearchParams = Promise<{ keyword?: string | string[] }>;
 const FALL_TERM_END = "2025-12-20T00:00:00+09:00";
@@ -47,7 +48,7 @@ export default async function Home({
               alt="컴파일룸 로고"
               width={96}
               height={96}
-              className="h-20 w-20 rounded-2xl border border-border-light/60 bg-background-light p-3 shadow-sm dark:border-border-dark/60 dark:bg-background-dark"
+              className="h-20 w-20 rounded-2xl border border-border-light/60 bg-background-light object-cover shadow-sm dark:border-border-dark/60 dark:bg-background-dark"
               priority
             />
             <div>
@@ -134,6 +135,9 @@ export default async function Home({
                       className="font-semibold text-text-primary-light transition hover:text-primary dark:text-text-primary-dark"
                     >
                       {material.author.name}
+                      <span className="ml-1 hidden text-xs text-text-secondary-light dark:text-text-secondary-dark sm:inline">
+                        #{getUserCode(material.author.id)}
+                      </span>
                     </Link>
                   </p>
                 </li>
@@ -257,6 +261,9 @@ export default async function Home({
                     className="font-semibold text-text-primary-light transition hover:text-primary dark:text-text-primary-dark"
                   >
                     {post.author.name}
+                    <span className="ml-1 hidden text-[11px] text-text-secondary-light dark:text-text-secondary-dark sm:inline">
+                      #{getUserCode(post.author.id)}
+                    </span>
                   </Link>
                   <span className="rounded-full bg-primary/10 px-3 py-0.5 text-primary">
                     {post.category}

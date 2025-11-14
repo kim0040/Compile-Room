@@ -66,7 +66,7 @@ export function UploadForm() {
             name="file"
             required
             accept=".pdf,.png,.jpg,.jpeg"
-            className="block w-full cursor-pointer rounded-lg border border-border-light/70 bg-white px-3 py-2 text-sm text-text-primary-light file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:font-semibold file:text-white dark:border-border-dark/70 dark:bg-background-dark dark:text-text-primary-dark"
+            className="block w-full cursor-pointer rounded-lg border border-border-light/70 bg-surface-light px-3 py-2 text-sm text-text-primary-light file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:font-semibold file:text-white dark:border-border-dark/70 dark:bg-surface-dark dark:text-text-primary-dark"
           />
           <p className="mt-2 text-xs text-text-secondary-light dark:text-text-secondary-dark">
             PDF, PNG, JPG (최대 3MB)

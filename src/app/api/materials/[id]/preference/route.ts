@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { createNotification } from "@/lib/notifications";
 
 type Params = Promise<{ id: string }>;
 
@@ -75,6 +76,17 @@ export async function POST(
     );
   }
 
+  const material = await prisma.material.findUnique({
+    where: { id: materialId },
+    select: { id: true, title: true, authorId: true },
+  });
+  if (!material) {
+    return NextResponse.json(
+      { message: "자료를 찾을 수 없습니다." },
+      { status: 404 },
+    );
+  }
+
   const body = await request.json().catch(() => null);
   const kind = body?.kind as "like" | "favorite" | undefined;
   if (!kind || !["like", "favorite"].includes(kind)) {
@@ -84,6 +96,8 @@ export async function POST(
     );
   }
 
+  let likeAdded = false;
+  let favoriteAdded = false;
   try {
     await prisma.$transaction(async (tx) => {
       if (kind === "like") {
@@ -101,6 +115,7 @@ export async function POST(
           await tx.materialLike.create({
             data: { materialId, userId: session.user.id },
           });
+          likeAdded = true;
         }
       } else {
         const existing = await tx.materialFavorite.findUnique({
@@ -117,6 +132,7 @@ export async function POST(
           await tx.materialFavorite.create({
             data: { materialId, userId: session.user.id },
           });
+          favoriteAdded = true;
         }
       }
     });
@@ -133,5 +149,24 @@ export async function POST(
     where: { id: materialId },
     data: { favoriteCount: data.favorites },
   });
+
+  const actorName = session.user.name ?? "팀원";
+  if (likeAdded && material.authorId !== session.user.id) {
+    await createNotification({
+      userId: material.authorId,
+      title: `${actorName}님이 내 자료에 좋아요를 남겼어요`,
+      body: `"${material.title}" 자료에 공감이 추가되었습니다.`,
+      link: `/materials/${material.id}`,
+    });
+  }
+  if (favoriteAdded && material.authorId !== session.user.id) {
+    await createNotification({
+      userId: material.authorId,
+      title: `${actorName}님이 내 자료를 즐겨찾기에 추가했어요`,
+      body: `"${material.title}"`,
+      link: `/materials/${material.id}`,
+    });
+  }
+
   return NextResponse.json(data);
 }

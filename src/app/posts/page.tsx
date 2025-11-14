@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime, formatRelativeTime } from "@/lib/format";
 import { CreatePostForm } from "@/components/create-post-form";
+import { getUserCode } from "@/lib/user-tag";
 import { getServerAuthSession } from "@/lib/auth";
 import { ChatRoom } from "@/components/chat-room";
 
@@ -142,6 +143,9 @@ export default async function PostsPage({
                     className="font-semibold text-text-primary-light hover:text-primary dark:text-text-primary-dark"
                   >
                     {post.author.name}
+                    <span className="ml-1 hidden text-[11px] text-text-secondary-light dark:text-text-secondary-dark sm:inline">
+                      #{getUserCode(post.author.id)}
+                    </span>
                   </Link>
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">
                     {post.category}

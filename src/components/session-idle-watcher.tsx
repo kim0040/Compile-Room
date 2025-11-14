@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { signOutSafely } from "@/lib/client-signout";
 
 const IDLE_LIMIT_MS = 10 * 60 * 1000;
 const ACTIVITY_EVENTS: Array<keyof WindowEventMap> = [
@@ -34,7 +35,7 @@ export function SessionIdleWatcher() {
       timerRef.current = setTimeout(() => {
         if (signingOutRef.current) return;
         signingOutRef.current = true;
-        signOut({ callbackUrl: "/" });
+        signOutSafely("/");
       }, IDLE_LIMIT_MS);
     };
 

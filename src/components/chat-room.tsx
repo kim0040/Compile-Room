@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { formatRelativeTime } from "@/lib/format";
+import { getUserCode } from "@/lib/user-tag";
 
 // 채팅 메시지를 주기적으로 불러오는 fetcher
 const fetcher = (url: string) =>
@@ -20,6 +21,8 @@ type Message = {
   content: string;
   createdAt: string;
   displayName: string;
+  authorId: number;
+  deleted: boolean;
   reactionCount: number;
   userReacted: boolean;
   author: {
@@ -155,6 +158,19 @@ export function ChatRoom({
     mutate();
   };
 
+  const handleDeleteMessage = async (messageId: number) => {
+    if (!session) return;
+    const confirmed =
+      typeof window === "undefined" ||
+      window.confirm("해당 메시지를 삭제하시겠습니까?");
+    if (!confirmed) return;
+    await fetch(`/api/chat/messages/${messageId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    mutate();
+  };
+
   const readOnlyRestriction = readOnly && roomRole !== "owner";
 
   const containerHeightClass = fullHeight
@@ -185,44 +201,73 @@ export function ChatRoom({
           방장이 읽기 전용으로 설정한 채널입니다. 메시지를 읽기만 할 수 있어요.
         </p>
       )}
-      <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-        {(data?.messages ?? []).map((message) => (
-          <div
-            key={message.id}
-            className="rounded-2xl bg-background-light/80 p-3 text-sm dark:bg-background-dark/50"
-          >
-            <div className="flex items-center gap-2 text-xs font-semibold text-text-primary-light dark:text-text-primary-dark">
-              {message.displayName}
-              {message.displayName.startsWith("익명#") ? null : (
-                <>
-                  {message.author.classYear && (
-                    <span className="text-text-secondary-light dark:text-text-secondary-dark">
-                      {message.author.classYear}
-                    </span>
-                  )}
-                </>
-              )}
-              <span className="text-[11px] text-text-secondary-light/80 dark:text-text-secondary-dark/70">
-                {formatRelativeTime(new Date(message.createdAt))}
-              </span>
-            </div>
-            <p className="mt-1 text-text-secondary-light dark:text-text-secondary-dark">
-              {message.content}
-            </p>
-            <button
-              type="button"
-              disabled={!session}
-              onClick={() => handleReact(message.id)}
-              className={`mt-2 inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold ${
-                message.userReacted
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border-light/60 text-text-secondary-light dark:border-border-dark/60 dark:text-text-secondary-dark"
-              } disabled:cursor-not-allowed disabled:opacity-60`}
+      <div className="flex-1 space-y-3 overflow-y-auto pr-2">
+        {(data?.messages ?? []).map((message) => {
+          const isAnonymous = message.displayName.startsWith("익명#");
+          const baseDisplayName = isAnonymous
+            ? message.displayName
+            : message.displayName.replace(/#\d{4}$/, "");
+          const userCode = getUserCode(message.authorId);
+          return (
+            <div
+              key={message.id}
+              className="rounded-2xl bg-background-light/80 p-3 text-sm dark:bg-background-dark/50"
             >
-              공감 {message.reactionCount}
-            </button>
-          </div>
-        ))}
+              <div className="flex items-start justify-between gap-3 text-xs text-text-primary-light dark:text-text-primary-dark">
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-semibold">
+                    <span>
+                      {baseDisplayName}
+                      {isAnonymous ? null : (
+                        <span className="ml-1 hidden text-[11px] text-text-secondary-light dark:text-text-secondary-dark sm:inline">
+                          #{userCode}
+                        </span>
+                      )}
+                    </span>
+                    {!isAnonymous && (
+                      <span className="text-[11px] text-text-secondary-light dark:text-text-secondary-dark">
+                        {message.author.classYear ?? ""}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-text-secondary-light/80 dark:text-text-secondary-dark/70">
+                    {formatRelativeTime(new Date(message.createdAt))}
+                  </span>
+                </div>
+                {(roomRole === "owner" ||
+                  message.authorId === session?.user?.id) &&
+                  !message.deleted && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteMessage(message.id)}
+                      className="text-[11px] text-red-500"
+                    >
+                      삭제
+                    </button>
+                  )}
+              </div>
+              <p
+                className={`mt-1 text-text-secondary-light dark:text-text-secondary-dark ${
+                  message.deleted ? "italic text-text-secondary-light/70" : ""
+                }`}
+              >
+                {message.deleted ? "(삭제된 메시지입니다)" : message.content}
+              </p>
+              <button
+                type="button"
+                disabled={!session || message.deleted}
+                onClick={() => handleReact(message.id)}
+                className={`mt-2 inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold ${
+                  message.userReacted
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border-light/60 text-text-secondary-light dark:border-border-dark/60 dark:text-text-secondary-dark"
+                } disabled:cursor-not-allowed disabled:opacity-60`}
+              >
+                공감 {message.reactionCount}
+              </button>
+            </div>
+          );
+        })}
         <div ref={bottomRef} />
       </div>
       <form

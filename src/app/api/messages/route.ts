@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { encryptText, decryptText } from "@/lib/crypto";
 import { decryptClassYear } from "@/lib/personal-data";
+import { createNotification } from "@/lib/notifications";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -37,7 +38,10 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     messages: messages.map((message) => ({
       id: message.id,
-      content: decryptText(message.content),
+      content: message.deletedAt
+        ? "(삭제된 메시지입니다)"
+        : decryptText(message.content),
+      deleted: Boolean(message.deletedAt),
       createdAt: message.createdAt,
       sender: {
         id: message.sender.id,
@@ -103,11 +107,22 @@ export async function POST(request: NextRequest) {
     },
   });
 
+  if (recipientId !== session.user.id) {
+    const actorName = session.user.name ?? "팀원";
+    await createNotification({
+      userId: recipientId,
+      title: `${actorName}님이 쪽지를 보냈습니다`,
+      body: content.slice(0, 80),
+      link: `/users/${session.user.id}`,
+    });
+  }
+
   return NextResponse.json({
     message: {
       id: message.id,
       content,
       createdAt: message.createdAt,
+      deleted: false,
       sender: {
         id: message.sender.id,
         name: message.sender.name,

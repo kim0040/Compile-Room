@@ -92,13 +92,13 @@ export function CountdownTimer({ targetDate }: Props) {
   }, [timeLeft, nextTermLeft]);
 
   return (
-    <div className="rounded-3xl border border-dashed border-border-light/70 bg-background-light/80 p-4 text-sm text-text-secondary-light shadow-sm">
+    <div className="rounded-3xl border border-dashed border-border-light/70 bg-background-light/80 p-4 text-sm text-text-secondary-light shadow-sm dark:border-border-dark/70 dark:bg-background-dark/40 dark:text-text-secondary-dark">
       {timeLeft.finished ? (
         <>
           <p className="text-xs font-semibold text-primary">
             방학 모드 · {NEXT_TERM_LABEL} 까지 카운트다운
           </p>
-          <p className="mt-1 text-lg font-bold text-text-primary-light">
+          <p className="mt-1 text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
             휴식 만끽 중! 다음 학기까지{" "}
             <span className="text-primary">{formatDuration(nextTermLeft)}</span>{" "}
             남았어요.
@@ -109,14 +109,16 @@ export function CountdownTimer({ targetDate }: Props) {
           <p className="text-xs font-semibold text-primary">
             2025년 12월 20일 토요일 기준
           </p>
-          <p className="mt-1 text-lg font-bold text-text-primary-light">
+          <p className="mt-1 text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
             종강까지{" "}
             <span className="text-primary">{formatDuration(timeLeft)}</span>{" "}
             남음
           </p>
         </>
       )}
-      <p className="mt-2 text-xs text-text-secondary-light">{message}</p>
+      <p className="mt-2 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+        {message}
+      </p>
     </div>
   );
 }

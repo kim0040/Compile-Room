@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { MaterialWithAuthor } from "@/lib/materials";
 import { formatRelativeTime } from "@/lib/format";
 import { MATERIAL_TYPE_LABELS } from "@/constants/material";
+import { getUserCode } from "@/lib/user-tag";
 
 type Props = {
   material: MaterialWithAuthor;
@@ -40,6 +41,9 @@ export function MaterialCard({ material }: Props) {
             className="font-semibold text-text-primary-light transition hover:text-primary dark:text-text-primary-dark"
           >
             {material.author.name}
+            <span className="ml-1 hidden text-xs text-text-secondary-light dark:text-text-secondary-dark sm:inline">
+              #{getUserCode(material.author.id)}
+            </span>
           </Link>
           <span className="text-text-secondary-light/70 dark:text-text-secondary-dark/80">
             댓글 {material._count.comments}개

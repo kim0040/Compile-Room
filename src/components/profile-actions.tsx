@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOutSafely } from "@/lib/client-signout";
 
 export function ProfileActions() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export function ProfileActions() {
       setIsDeleting(false);
       return;
     }
-    await signOut({ callbackUrl: "/" });
+    await signOutSafely("/");
     router.refresh();
   };
 

@@ -94,12 +94,26 @@ model Post {
   isExample Boolean  @default(false)
   authorId  Int
   author    User     @relation(fields: [authorId], references: [id])
+  comments  PostComment[]
   likes     PostLike[]
   favorites PostFavorite[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([createdAt])
+}
+
+model PostComment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  authorId  Int
+  postId    Int
+  author    User     @relation(fields: [authorId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId])
 }
 
 model ChatMessage {
@@ -111,6 +125,7 @@ model ChatMessage {
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
   reactions ChatMessageReaction[]
+  deletedAt DateTime?
   createdAt DateTime @default(now())
 
   @@index([roomId, createdAt])
@@ -247,10 +262,24 @@ model DirectMessage {
   senderId    Int
   recipientId Int
   content     String
+  deletedAt   DateTime?
   createdAt   DateTime @default(now())
   sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
 
   @@index([senderId, recipientId, createdAt])
   @@index([recipientId, senderId, createdAt])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
 }

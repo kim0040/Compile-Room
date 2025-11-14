@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { createNotification } from "@/lib/notifications";
 
 type Params = Promise<{ id: string }>;
 
@@ -73,6 +74,17 @@ export async function POST(
     );
   }
 
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { id: true, title: true, authorId: true },
+  });
+  if (!post) {
+    return NextResponse.json(
+      { message: "게시글을 찾을 수 없습니다." },
+      { status: 404 },
+    );
+  }
+
   const body = await request.json().catch(() => null);
   const kind = body?.kind as "like" | "favorite" | undefined;
   if (!kind || !["like", "favorite"].includes(kind)) {
@@ -82,6 +94,8 @@ export async function POST(
     );
   }
 
+  let likeAdded = false;
+  let favoriteAdded = false;
   try {
     await prisma.$transaction(async (tx) => {
       if (kind === "like") {
@@ -94,6 +108,7 @@ export async function POST(
           await tx.postLike.create({
             data: { postId, userId: session.user.id },
           });
+          likeAdded = true;
         }
       } else {
         const existing = await tx.postFavorite.findUnique({
@@ -105,6 +120,7 @@ export async function POST(
           await tx.postFavorite.create({
             data: { postId, userId: session.user.id },
           });
+          favoriteAdded = true;
         }
       }
     });
@@ -116,5 +132,24 @@ export async function POST(
   }
 
   const data = await computePostPreference(postId, session.user.id);
+
+  const actorName = session.user.name ?? "팀원";
+  if (likeAdded && post.authorId !== session.user.id) {
+    await createNotification({
+      userId: post.authorId,
+      title: `${actorName}님이 내 게시글에 좋아요를 남겼어요`,
+      body: `"${post.title}"`,
+      link: `/posts/${post.id}`,
+    });
+  }
+  if (favoriteAdded && post.authorId !== session.user.id) {
+    await createNotification({
+      userId: post.authorId,
+      title: `${actorName}님이 게시글을 즐겨찾기에 추가했어요`,
+      body: `"${post.title}"`,
+      link: `/posts/${post.id}`,
+    });
+  }
+
   return NextResponse.json(data);
 }

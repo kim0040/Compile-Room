@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { decryptClassYear } from "@/lib/personal-data";
+import { getUserCode } from "@/lib/user-tag";
 
 export const metadata = {
   title: "사용자 디렉터리 - 컴파일룸",
@@ -52,6 +53,9 @@ export default async function UsersPage() {
           >
             <p className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">
               {user.name}
+              <span className="ml-1 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                #{getUserCode(user.id)}
+              </span>
             </p>
             <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
               {user.email}

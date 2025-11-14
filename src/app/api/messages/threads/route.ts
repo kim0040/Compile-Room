@@ -40,7 +40,9 @@ export async function GET(_request: NextRequest) {
       },
       lastMessage: {
         id: message.id,
-        preview: decryptText(message.content).slice(0, 80),
+        preview: message.deletedAt
+          ? "(삭제된 메시지입니다)"
+          : decryptText(message.content).slice(0, 80),
         createdAt: message.createdAt,
         isMine: message.senderId === session.user.id,
       },

@@ -9,6 +9,7 @@ import { MaterialDownloadButton } from "@/components/material-download-button";
 import { MaterialPreferences } from "@/components/material-preferences";
 import { getServerAuthSession } from "@/lib/auth";
 import { MaterialDeleteButton } from "@/components/material-delete-button";
+import { getUserCode } from "@/lib/user-tag";
 
 type Params = Promise<{ id: string }>;
 
@@ -111,6 +112,9 @@ export default async function MaterialDetail({
               className="text-base font-semibold text-text-primary-light transition hover:text-primary dark:text-text-primary-dark"
             >
               {material.author.name}
+              <span className="ml-1 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                #{getUserCode(material.authorId)}
+              </span>
             </Link>
             <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
               {material.author.classYear ?? "학번 미등록"}
@@ -165,6 +169,9 @@ export default async function MaterialDetail({
                       className="transition hover:text-primary"
                     >
                       {comment.author.name}
+                      <span className="ml-1 hidden text-[11px] text-text-secondary-light dark:text-text-secondary-dark sm:inline">
+                        #{getUserCode(comment.author.id)}
+                      </span>
                     </Link>
                     <span className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
                       {comment.author.classYear ?? ""}

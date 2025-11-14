@@ -8,6 +8,7 @@ import { buildAnonymousSeed, generateAnonymousName } from "@/utils/alias";
 import { rateLimit } from "@/lib/ratelimit";
 import { getClientIp } from "@/lib/request-ip";
 import { decryptClassYear } from "@/lib/personal-data";
+import { getUserCode } from "@/lib/user-tag";
 
 /**
  * GET /api/chat/messages
@@ -61,9 +62,13 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     messages: messages.map((message) => ({
       id: message.id,
-      content: decryptText(message.content),
+      content: message.deletedAt
+        ? "(삭제된 메시지입니다)"
+        : decryptText(message.content),
       createdAt: message.createdAt,
       displayName: message.authorDisplayName || message.author.name,
+      authorId: message.authorId,
+      deleted: Boolean(message.deletedAt),
       reactionCount: message._count.reactions,
       userReacted: session?.user?.id
         ? (message.reactions?.length ?? 0) > 0
@@ -133,7 +138,7 @@ export async function POST(request: NextRequest) {
   const anonymousSeed = buildAnonymousSeed(ip, session.user.id);
   const displayName = anonymous
     ? generateAnonymousName(anonymousSeed)
-    : session.user.name ?? "익명";
+    : `${session.user.name ?? "익명"}#${getUserCode(session.user.id)}`;
 
   const message = await prisma.chatMessage.create({
     data: {
@@ -151,6 +156,8 @@ export async function POST(request: NextRequest) {
       content: decryptText(message.content),
       createdAt: message.createdAt,
       displayName: message.authorDisplayName || message.author.name,
+      authorId: message.author.id,
+      deleted: false,
       author: {
         name: message.author.name,
         classYear: decryptClassYear(message.author.classYear),

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { decryptClassYear } from "@/lib/personal-data";
+import { formatUserTag, getUserCode } from "@/lib/user-tag";
 import { formatDateTime, formatRelativeTime } from "@/lib/format";
 import { DirectMessagePanel } from "@/components/direct-message-panel";
 
@@ -62,6 +63,7 @@ export default async function UserDetailPage({ params }: { params: Params }) {
   }
 
   const safeClassYear = decryptClassYear(user.classYear);
+  const userTag = formatUserTag(user.name, user.id);
 
   const isSelf = session.user.id === user.id;
 
@@ -72,7 +74,7 @@ export default async function UserDetailPage({ params }: { params: Params }) {
       </Link>
       <section className="rounded-3xl border border-border-light/70 bg-surface-light p-6 shadow-sm dark:border-border-dark/70 dark:bg-surface-dark">
         <h1 className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark">
-          {user.name}
+          {userTag}
         </h1>
         <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
           가입일 {formatDateTime(user.createdAt)} (
@@ -109,11 +111,11 @@ export default async function UserDetailPage({ params }: { params: Params }) {
       {!isSelf && (
         <section className="rounded-3xl border border-border-light/70 bg-surface-light p-6 shadow-sm dark:border-border-dark/70 dark:bg-surface-dark">
           <h2 className="text-xl font-semibold text-text-primary-light dark:text-text-primary-dark">
-            {user.name}님에게 쪽지 보내기
+              {userTag}님에게 쪽지 보내기
           </h2>
           <DirectMessagePanel
             counterpartId={user.id}
-            counterpartName={user.name}
+            counterpartName={userTag}
           />
         </section>
       )}

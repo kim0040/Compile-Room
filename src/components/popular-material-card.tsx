@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { MaterialWithAuthor } from "@/lib/materials";
 import { MATERIAL_TYPE_LABELS } from "@/constants/material";
+import { getUserCode } from "@/lib/user-tag";
 
 type Props = {
   material: MaterialWithAuthor;
@@ -30,6 +31,9 @@ export function PopularMaterialCard({ material, rank }: Props) {
         className="rounded-full bg-surface-light px-3 py-1 text-xs font-semibold text-text-secondary-light transition hover:text-primary dark:bg-surface-dark dark:text-text-secondary-dark"
       >
         {material.author.name}
+        <span className="ml-1 hidden sm:inline">
+          #{getUserCode(material.author.id)}
+        </span>
       </Link>
     </li>
   );
