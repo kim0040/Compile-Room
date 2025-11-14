@@ -14,7 +14,7 @@ const chatMessageWithRelations = Prisma.validator<Prisma.ChatMessageDefaultArgs>
   include: {
     author: { select: { name: true, classYear: true } },
     _count: { select: { reactions: true } },
-    reactions: { where: { userId: '' } , select: { id: true } }, // userId is dynamically set
+    reactions: { select: { id: true } }, // userId is dynamically set
   },
 });
 
