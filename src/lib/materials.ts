@@ -103,7 +103,7 @@ export async function getMaterialById(id: number) {
   const material = await prisma.material.findUnique({
     where: { id },
     include: {
-      author: true,
+      ...baseMaterialInclude,
       comments: {
         include: { author: true },
         orderBy: { createdAt: "desc" },
