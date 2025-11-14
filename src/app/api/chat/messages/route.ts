@@ -10,15 +10,6 @@ import { getClientIp } from "@/lib/request-ip";
 import { decryptClassYear } from "@/lib/personal-data";
 import { getUserCode } from "@/lib/user-tag";
 
-const chatMessageWithRelations = Prisma.validator<Prisma.ChatMessageDefaultArgs>()({
-  include: {
-    author: { select: { name: true, classYear: true } },
-    _count: { select: { reactions: true } },
-    reactions: { select: { id: true } }, // userId is dynamically set
-  },
-});
-
-type ChatMessageWithRelations = Prisma.ChatMessageGetPayload<typeof chatMessageWithRelations>;
 
 
 /**
@@ -51,7 +42,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const messageInclude: Record<string, any> = {
+  const messageInclude: Prisma.ChatMessageInclude = {
     author: { select: { name: true, classYear: true } },
     _count: { select: { reactions: true } },
   };
@@ -71,7 +62,7 @@ export async function GET(request: NextRequest) {
   });
 
   return NextResponse.json({
-    messages: messages.map((message: ChatMessageWithRelations) => ({
+    messages: messages.map((message) => ({
       id: message.id,
       content: message.deletedAt
         ? "(삭제된 메시지입니다)"
