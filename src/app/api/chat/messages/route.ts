@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const messageInclude: Prisma.ChatMessageInclude = {
+  const messageInclude: Prisma.ChatMessageFindManyArgs["include"] = {
     author: true,
     _count: { select: { reactions: true } },
   };
