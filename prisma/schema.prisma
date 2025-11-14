@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum MaterialType {
+  LECTURE
+  ASSIGNMENT
+  EXAM
+  SUMMARY
+  OTHER
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  name         String
+  email        String     @unique
+  profileImage String?
+  classYear    String?
+  currentGrade Int?
+  passwordHash String?
+  role         String      @default("student")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  materials    Material[]
+  comments     Comment[]
+  posts        Post[]
+  chatMessages ChatMessage[]
+  chatRooms    ChatRoom[] @relation("RoomOwner")
+  memberships  ChatRoomMember[]
+  accounts     Account[]
+  sessions     Session[]
+}
+
+model Material {
+  id             Int           @id @default(autoincrement())
+  title          String
+  description    String
+  subject        String
+  category       String        @default("전공")
+  type           MaterialType  @default(LECTURE)
+  fileUrl        String
+  fileName       String
+  fileType       String?
+  heroImageUrl   String?
+  downloadCount  Int           @default(0)
+  favoriteCount  Int           @default(0)
+  authorId       Int
+  author         User          @relation(fields: [authorId], references: [id])
+  comments       Comment[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([subject])
+  @@index([createdAt])
+}
+
+model Comment {
+  id         Int       @id @default(autoincrement())
+  content    String
+  authorId   Int
+  author     User      @relation(fields: [authorId], references: [id])
+  materialId Int
+  material   Material  @relation(fields: [materialId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([materialId])
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  tags      String   @default("")
+  category  String   @default("전공")
+  viewCount Int      @default(0)
+  isExample Boolean  @default(false)
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  content   String
+  authorId  Int
+  authorDisplayName String @default("익명")
+  roomId    Int
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([roomId, createdAt])
+}
+
+model ChatRoom {
+  id            Int               @id @default(autoincrement())
+  name          String
+  description   String?
+  isPrivate     Boolean           @default(false)
+  requireLogin  Boolean           @default(true)
+  passwordHash  String?
+  isDefault     Boolean           @default(false)
+  ownerId       Int
+  owner         User              @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members       ChatRoomMember[]
+  messages      ChatMessage[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([createdAt])
+}
+
+model ChatRoomMember {
+  id        Int      @id @default(autoincrement())
+  roomId    Int
+  userId    Int
+  role      String   @default("member")
+  joinedAt  DateTime @default(now())
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+}
+
+model Account {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
