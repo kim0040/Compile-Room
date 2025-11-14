@@ -31,14 +31,14 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const identifier = credentials.email.toLowerCase();
+        const identifier = credentials.email.toLowerCase().trim();
         const lockInfo = isLoginLocked(identifier);
         if (lockInfo.locked) {
           throw new Error("LOCKED");
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email: identifier },
         });
 
         if (!user || !user.passwordHash) {

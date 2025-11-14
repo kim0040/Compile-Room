@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
@@ -12,12 +13,37 @@ import {
 } from "@/types/material-type";
 
 const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
-const ALLOWED_TYPES = [
+const ALLOWED_MIME_TYPES = new Set([
   "application/pdf",
   "image/png",
   "image/jpeg",
-  "image/jpg",
-];
+]);
+const ALLOWED_EXTENSIONS = new Set([".pdf", ".png", ".jpg", ".jpeg"]);
+
+function detectMimeType(buffer: Buffer): string | null {
+  if (buffer.length >= 5 && buffer.subarray(0, 5).equals(Buffer.from([0x25, 0x50, 0x44, 0x46, 0x2d]))) {
+    return "application/pdf";
+  }
+
+  if (
+    buffer.length >= 8 &&
+    buffer
+      .subarray(0, 8)
+      .equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+  ) {
+    return "image/png";
+  }
+
+  if (
+    buffer.length >= 4 &&
+    buffer.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])) &&
+    buffer.subarray(buffer.length - 2).equals(Buffer.from([0xff, 0xd9]))
+  ) {
+    return "image/jpeg";
+  }
+
+  return null;
+}
 
 /**
  * POST /api/upload
@@ -71,7 +97,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!ALLOWED_TYPES.includes(file.type)) {
+  const extension = file.name.includes(".")
+    ? `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`
+    : "";
+  if (!ALLOWED_EXTENSIONS.has(extension)) {
+    return NextResponse.json(
+      { message: "PDF, PNG, JPG 파일만 업로드할 수 있습니다." },
+      { status: 400 },
+    );
+  }
+
+  const fileBuffer = Buffer.from(await file.arrayBuffer());
+  const detectedMime = detectMimeType(fileBuffer);
+  if (!detectedMime || !ALLOWED_MIME_TYPES.has(detectedMime)) {
     return NextResponse.json(
       { message: "PDF, PNG, JPG 파일만 업로드할 수 있습니다." },
       { status: 400 },
@@ -82,7 +120,7 @@ export async function POST(request: NextRequest) {
     ? typeValue
     : MaterialTypeEnum.OTHER;
 
-  const uploadResult = await saveUpload(file);
+  const uploadResult = await saveUpload(file, fileBuffer);
 
   const material = await prisma.material.create({
     data: {
@@ -93,7 +131,7 @@ export async function POST(request: NextRequest) {
       type: materialType,
       fileUrl: uploadResult.fileUrl,
       fileName: file.name,
-      fileType: file.type || null,
+      fileType: detectedMime,
       heroImageUrl,
       authorId: session.user.id,
       downloadCount: 0,
