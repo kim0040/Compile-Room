@@ -29,10 +29,10 @@ export default async function PostsPage({
   let boardChatRoom =
     (await prisma.chatRoom.findFirst({
       where: { isDefault: true },
-      select: { id, name },
+      select: { id: true, name: true },
     })) ??
     (await prisma.chatRoom.findFirst({
-      select: { id, name },
+      select: { id: true, name: true },
     }));
 
   if (session?.user?.id && boardChatRoom) {
