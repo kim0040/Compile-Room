@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import type { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { encryptText, decryptText } from "@/lib/crypto";
 import { decryptClassYear } from "@/lib/personal-data";
 import { createNotification } from "@/lib/notifications";
 
-type DirectMessageWithUsers = Awaited<
-  ReturnType<typeof prisma.directMessage.findMany>
->[number];
+type DirectMessageWithUsers = Prisma.DirectMessageGetPayload<{
+  include: {
+    sender: { select: { id: true; name: true; classYear: true } };
+    recipient: { select: { id: true; name: true; classYear: true } };
+  };
+}>;
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -24,7 +28,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const messages = (await prisma.directMessage.findMany({
+  const messages = await prisma.directMessage.findMany({
     where: {
       OR: [
         { senderId: session.user.id, recipientId: userId },
@@ -37,7 +41,7 @@ export async function GET(request: NextRequest) {
       recipient: { select: { id: true, name: true, classYear: true } },
     },
     take: 300,
-  })) as DirectMessageWithUsers[];
+  });
 
   return NextResponse.json({
     messages: messages.map((message: DirectMessageWithUsers) => ({
