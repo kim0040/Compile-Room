@@ -11,7 +11,11 @@ import { getUserCode } from "@/lib/user-tag";
 
 type ChatMessageWithRelations = Awaited<
   ReturnType<typeof prisma.chatMessage.findMany>
->[number];
+>[number] & {
+  author: { name: string; classYear: string | null };
+  reactions?: Array<{ id: number }>;
+  _count: { reactions: number };
+};
 
 
 /**
@@ -45,7 +49,7 @@ export async function GET(request: NextRequest) {
   }
 
   const messageInclude: Record<string, any> = {
-    author: true,
+    author: { select: { name: true, classYear: true } },
     _count: { select: { reactions: true } },
   };
 
