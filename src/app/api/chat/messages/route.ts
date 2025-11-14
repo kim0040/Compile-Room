@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
         ? "(삭제된 메시지입니다)"
         : decryptText(message.content),
       createdAt: message.createdAt,
-      displayName: message.authorDisplayName || message.author.name,
+      displayName: message.authorDisplayName || message.author?.name || 'Unknown',
       authorId: message.authorId,
       deleted: Boolean(message.deletedAt),
       reactionCount: message._count.reactions,
@@ -77,8 +77,8 @@ export async function GET(request: NextRequest) {
         ? (message.reactions?.length ?? 0) > 0
         : false,
       author: {
-        name: message.author.name,
-        classYear: decryptClassYear(message.author.classYear),
+        name: message.author?.name || 'Unknown',
+        classYear: decryptClassYear(message.author?.classYear),
       },
     })),
   });
