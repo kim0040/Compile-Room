@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const messages = await prisma.directMessage.findMany({
+  const messages = (await prisma.directMessage.findMany({
     where: {
       OR: [
         { senderId: session.user.id, recipientId: userId },
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       recipient: { select: { id: true, name: true, classYear: true } },
     },
     take: 300,
-  });
+  })) as DirectMessageWithUsers[];
 
   return NextResponse.json({
     messages: messages.map((message: DirectMessageWithUsers) => ({

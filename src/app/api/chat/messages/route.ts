@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { decryptText, encryptText } from "@/lib/crypto";
@@ -10,6 +9,9 @@ import { getClientIp } from "@/lib/request-ip";
 import { decryptClassYear } from "@/lib/personal-data";
 import { getUserCode } from "@/lib/user-tag";
 
+type ChatMessageWithRelations = Awaited<
+  ReturnType<typeof prisma.chatMessage.findMany>
+>[number];
 
 
 /**
@@ -42,8 +44,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const messageInclude: Prisma.ChatMessageInclude = {
-    author: { select: { name: true, classYear: true } },
+  const messageInclude: Record<string, any> = {
+    author: true,
     _count: { select: { reactions: true } },
   };
 
@@ -54,15 +56,15 @@ export async function GET(request: NextRequest) {
     };
   }
 
-  const messages = await prisma.chatMessage.findMany({
+  const messages = (await prisma.chatMessage.findMany({
     where: { roomId },
     include: messageInclude,
     orderBy: { createdAt: "asc" },
     take: 200,
-  });
+  })) as ChatMessageWithRelations[];
 
   return NextResponse.json({
-    messages: messages.map((message) => ({
+    messages: messages.map((message: ChatMessageWithRelations) => ({
       id: message.id,
       content: message.deletedAt
         ? "(삭제된 메시지입니다)"
