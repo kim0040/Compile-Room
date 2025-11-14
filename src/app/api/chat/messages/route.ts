@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { decryptText, encryptText } from "@/lib/crypto";
@@ -9,9 +10,16 @@ import { getClientIp } from "@/lib/request-ip";
 import { decryptClassYear } from "@/lib/personal-data";
 import { getUserCode } from "@/lib/user-tag";
 
-type ChatMessageWithMeta = Awaited<
-  ReturnType<typeof prisma.chatMessage.findMany>
->[number];
+const chatMessageWithRelations = Prisma.validator<Prisma.ChatMessageDefaultArgs>()({
+  include: {
+    author: { select: { name: true, classYear: true } },
+    _count: { select: { reactions: true } },
+    reactions: { where: { userId: '' } , select: { id: true } }, // userId is dynamically set
+  },
+});
+
+type ChatMessageWithRelations = Prisma.ChatMessageGetPayload<typeof chatMessageWithRelations>;
+
 
 /**
  * GET /api/chat/messages
@@ -63,13 +71,13 @@ export async function GET(request: NextRequest) {
   });
 
   return NextResponse.json({
-    messages: messages.map((message: ChatMessageWithMeta) => ({
+    messages: messages.map((message: ChatMessageWithRelations) => ({
       id: message.id,
       content: message.deletedAt
         ? "(삭제된 메시지입니다)"
         : decryptText(message.content),
       createdAt: message.createdAt,
-      displayName: message.authorDisplayName || message.author?.name || 'Unknown',
+      displayName: message.authorDisplayName || message.author.name,
       authorId: message.authorId,
       deleted: Boolean(message.deletedAt),
       reactionCount: message._count.reactions,
@@ -77,8 +85,8 @@ export async function GET(request: NextRequest) {
         ? (message.reactions?.length ?? 0) > 0
         : false,
       author: {
-        name: message.author?.name || 'Unknown',
-        classYear: decryptClassYear(message.author?.classYear),
+        name: message.author.name,
+        classYear: decryptClassYear(message.author.classYear),
       },
     })),
   });
