@@ -97,7 +97,7 @@ export async function POST(
   let likeAdded = false;
   let favoriteAdded = false;
   try {
-    await prisma.$transaction(async (tx: typeof prisma) => {
+    await prisma.$transaction(async (tx) => {
       if (kind === "like") {
         const existing = await tx.postLike.findUnique({
           where: { postId_userId: { postId, userId: session.user.id } },
