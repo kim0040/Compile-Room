@@ -13,6 +13,9 @@ fi
 echo "[deploy] 의존성 설치 (npm ci)"
 npm ci
 
+echo "[deploy] Prisma Client 생성"
+npx prisma generate
+
 echo "[deploy] Prisma 마이그레이션 적용"
 npx prisma migrate deploy
 
