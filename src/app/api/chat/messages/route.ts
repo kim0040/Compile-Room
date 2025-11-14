@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     include: messageInclude,
     orderBy: { createdAt: "asc" },
     take: 200,
-  })) as ChatMessageWithRelations[];
+  })) as unknown as ChatMessageWithRelations[];
 
   return NextResponse.json({
     messages: messages.map((message: ChatMessageWithRelations) => ({
