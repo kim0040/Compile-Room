@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { encryptClassYear } from "@/lib/personal-data";
 
 const PASSWORD_POLICY =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=[\]{};':"\\|,.<>/?]).{10,}$/;
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
     data: {
       name: name.trim(),
       email: normalizedEmail,
-      classYear: classYear?.trim(),
+      classYear: encryptClassYear(classYear),
       currentGrade: normalizedGrade,
       passwordHash,
     },

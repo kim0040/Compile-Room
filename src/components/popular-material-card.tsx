@@ -25,9 +25,12 @@ export function PopularMaterialCard({ material, rank }: Props) {
           </p>
         </div>
       </div>
-      <span className="rounded-full bg-surface-light px-3 py-1 text-xs font-semibold text-text-secondary-light dark:bg-surface-dark dark:text-text-secondary-dark">
+      <Link
+        href={`/users/${material.author.id}`}
+        className="rounded-full bg-surface-light px-3 py-1 text-xs font-semibold text-text-secondary-light transition hover:text-primary dark:bg-surface-dark dark:text-text-secondary-dark"
+      >
         {material.author.name}
-      </span>
+      </Link>
     </li>
   );
 }

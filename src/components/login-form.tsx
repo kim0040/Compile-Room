@@ -29,6 +29,10 @@ export function LoginForm() {
     setIsSubmitting(false);
 
     if (result?.error) {
+      if (result.error === "LOCKED") {
+        setError("로그인 시도가 5회 연속으로 실패하여 5분 동안 잠금되었습니다.");
+        return;
+      }
       setError("이메일 또는 비밀번호가 올바르지 않습니다.");
       return;
     }

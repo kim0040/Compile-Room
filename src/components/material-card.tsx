@@ -35,7 +35,12 @@ export function MaterialCard({ material }: Props) {
           {material.description}
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-text-secondary-light dark:text-text-secondary-dark">
-          <span>{material.author.name}</span>
+          <Link
+            href={`/users/${material.author.id}`}
+            className="font-semibold text-text-primary-light transition hover:text-primary dark:text-text-primary-dark"
+          >
+            {material.author.name}
+          </Link>
           <span className="text-text-secondary-light/70 dark:text-text-secondary-dark/80">
             댓글 {material._count.comments}개
           </span>

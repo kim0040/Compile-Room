@@ -137,7 +137,12 @@ export default async function PostsPage({
                   {post.content}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                  <span>{post.author.name}</span>
+                  <Link
+                    href={`/users/${post.author.id}`}
+                    className="font-semibold text-text-primary-light hover:text-primary dark:text-text-primary-dark"
+                  >
+                    {post.author.name}
+                  </Link>
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">
                     {post.category}
                   </span>

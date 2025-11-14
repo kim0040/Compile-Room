@@ -3,36 +3,7 @@ import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-
-type RawRoom = {
-  id: number;
-  name: string;
-  description: string | null;
-  isPrivate: boolean;
-  isDefault: boolean;
-  requireLogin: boolean;
-  owner: { name: string };
-  _count: { members: number; messages: number };
-};
-
-function serializeRoom(
-  room: RawRoom,
-  memberRoles: Map<number, string | undefined>,
-) {
-  return {
-    id: room.id,
-    name: room.name,
-    description: room.description,
-    isPrivate: room.isPrivate,
-    isDefault: room.isDefault,
-    requireLogin: room.requireLogin,
-    ownerName: room.owner.name,
-    memberCount: room._count.members,
-    messageCount: room._count.messages,
-    isMember: memberRoles.has(room.id),
-    role: memberRoles.get(room.id) ?? null,
-  };
-}
+import { normalizeMaxMembers, RawRoom, serializeRoom } from "./utils";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -69,7 +40,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { name, description, isPrivate, password } = body;
+  const { name, description, isPrivate, password, readOnly, maxMembers } = body;
 
   if (!name || name.length < 2) {
     return NextResponse.json(
@@ -85,11 +56,23 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  let normalizedMaxMembers: number | null = null;
+  try {
+    normalizedMaxMembers = normalizeMaxMembers(maxMembers);
+  } catch (error) {
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : "정원 설정이 올바르지 않습니다." },
+      { status: 400 },
+    );
+  }
+
   const room = await prisma.chatRoom.create({
     data: {
       name,
       description,
       isPrivate: !!isPrivate,
+      readOnly: !!readOnly,
+      maxMembers: normalizedMaxMembers,
       passwordHash: password ? await bcrypt.hash(password, 10) : null,
       ownerId: session.user.id,
     },

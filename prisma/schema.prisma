@@ -40,6 +40,8 @@ model User {
   postLikes        PostLike[]
   postFavorites    PostFavorite[]
   chatReactions    ChatMessageReaction[]
+  sentMessages     DirectMessage[] @relation("SentMessages")
+  receivedMessages DirectMessage[] @relation("ReceivedMessages")
   accounts     Account[]
   sessions     Session[]
 }
@@ -119,6 +121,8 @@ model ChatRoom {
   name          String
   description   String?
   isPrivate     Boolean           @default(false)
+  readOnly      Boolean           @default(false)
+  maxMembers    Int?
   requireLogin  Boolean           @default(true)
   passwordHash  String?
   isDefault     Boolean           @default(false)
@@ -236,4 +240,17 @@ model ChatMessageReaction {
 
   @@unique([messageId, userId])
   @@index([userId])
+}
+
+model DirectMessage {
+  id          Int      @id @default(autoincrement())
+  senderId    Int
+  recipientId Int
+  content     String
+  createdAt   DateTime @default(now())
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, recipientId, createdAt])
+  @@index([recipientId, senderId, createdAt])
 }

@@ -49,3 +49,56 @@ body {
   --color-text-secondary-light: var(--text-secondary-dark);
   --color-border-light: var(--border-dark);
 }
+
+main,
+#__next {
+  background-color: var(--color-background-light);
+  color: var(--color-text-primary-light);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+:root[data-theme='dark'] main,
+:root[data-theme='dark'] #__next {
+  background-color: var(--color-background-dark);
+  color: var(--color-text-primary-dark);
+}
+
+.bg-background-light {
+  background-color: var(--color-background-light) !important;
+}
+
+:root[data-theme='dark'] .bg-background-light {
+  background-color: var(--color-background-dark) !important;
+}
+
+.bg-surface-light {
+  background-color: var(--color-surface-light) !important;
+}
+
+:root[data-theme='dark'] .bg-surface-light {
+  background-color: var(--color-surface-dark) !important;
+}
+
+.text-text-primary-light {
+  color: var(--color-text-primary-light) !important;
+}
+
+:root[data-theme='dark'] .text-text-primary-light {
+  color: var(--color-text-primary-dark) !important;
+}
+
+.text-text-secondary-light {
+  color: var(--color-text-secondary-light) !important;
+}
+
+:root[data-theme='dark'] .text-text-secondary-light {
+  color: var(--color-text-secondary-dark) !important;
+}
+
+.border-border-light {
+  border-color: var(--color-border-light) !important;
+}
+
+:root[data-theme='dark'] .border-border-light {
+  border-color: var(--color-border-dark) !important;
+}

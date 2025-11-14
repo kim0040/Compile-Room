@@ -5,6 +5,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { encryptClassYear, decryptClassYear } from "@/lib/personal-data";
 
 export async function PUT(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -42,7 +43,7 @@ export async function PUT(request: NextRequest) {
     where: { id: session.user.id },
     data: {
       name: name.trim(),
-      classYear: classYear?.trim() || null,
+      classYear: encryptClassYear(classYear),
       currentGrade: normalizedGrade,
     },
     select: {
@@ -55,7 +56,12 @@ export async function PUT(request: NextRequest) {
   revalidatePath("/profile");
   revalidatePath("/department");
 
-  return NextResponse.json({ user: updated });
+  return NextResponse.json({
+    user: {
+      ...updated,
+      classYear: decryptClassYear(updated.classYear),
+    },
+  });
 }
 
 export async function DELETE() {

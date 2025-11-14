@@ -1,5 +1,6 @@
 import { MaterialType, Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
+import { decryptClassYear } from "./personal-data";
 
 export type MaterialWithAuthor = Prisma.MaterialGetPayload<{
   include: { author: true; _count: { select: { comments: true } } };
@@ -16,6 +17,27 @@ const baseMaterialInclude = {
   author: true,
   _count: { select: { comments: true } },
 } as const;
+
+function sanitizeAuthor<T extends { classYear?: string | null }>(author: T) {
+  return {
+    ...author,
+    classYear: decryptClassYear(author.classYear),
+  };
+}
+
+function sanitizeMaterial<T extends { author: any; comments?: any[] }>(material: T) {
+  const withAuthor = {
+    ...material,
+    author: sanitizeAuthor(material.author),
+  };
+  if (withAuthor.comments) {
+    withAuthor.comments = withAuthor.comments.map((comment: any) => ({
+      ...comment,
+      author: sanitizeAuthor(comment.author),
+    }));
+  }
+  return withAuthor;
+}
 
 export async function getLatestMaterials(
   keyword?: string,
@@ -36,7 +58,11 @@ export async function getLatestMaterials(
       orderBy: { createdAt: "desc" },
       take,
     })
-    .then((materials) => materials as MaterialWithAuthor[]);
+    .then((materials) =>
+      (materials as MaterialWithAuthor[]).map((material) =>
+        sanitizeMaterial(material),
+      ),
+    );
 }
 
 export async function getPopularMaterials(
@@ -52,13 +78,17 @@ export async function getPopularMaterials(
       ],
       take,
     })
-    .then((materials) => materials as MaterialWithAuthor[]);
+    .then((materials) =>
+      (materials as MaterialWithAuthor[]).map((material) =>
+        sanitizeMaterial(material),
+      ),
+    );
 }
 
 export async function getMaterialById(
   id: number,
 ): Promise<MaterialDetail | null> {
-  return prisma.material.findUnique({
+  const material = (await prisma.material.findUnique({
     where: { id },
     include: {
       author: true,
@@ -67,7 +97,8 @@ export async function getMaterialById(
         orderBy: { createdAt: "desc" },
       },
     },
-  }) as Promise<MaterialDetail | null>;
+  })) as MaterialDetail | null;
+  return material ? (sanitizeMaterial(material) as MaterialDetail) : null;
 }
 
 export async function getMaterialStats() {

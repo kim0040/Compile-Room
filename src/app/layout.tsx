@@ -4,6 +4,7 @@ import { Footer } from "@/components/footer";
 import { AuthProvider } from "@/components/auth/session-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { ThemeScript } from "@/components/theme/theme-script";
+import { SessionIdleWatcher } from "@/components/session-idle-watcher";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-background-light text-text-primary-light antialiased transition-colors duration-300 dark:bg-background-dark dark:text-text-primary-dark">
         <ThemeProvider>
           <AuthProvider>
+            <SessionIdleWatcher />
             <div className="flex min-h-screen flex-col">
               <Header />
               <main className="flex-1 bg-background-light px-4 py-6 transition-colors duration-300 dark:bg-background-dark sm:px-6 lg:px-8">

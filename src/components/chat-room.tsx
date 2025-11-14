@@ -31,9 +31,20 @@ type Message = {
 type Props = {
   roomId: number | null;
   roomName: string;
+  roomRole?: string | null;
+  readOnly?: boolean;
+  description?: string;
+  fullHeight?: boolean;
 };
 
-export function ChatRoom({ roomId, roomName }: Props) {
+export function ChatRoom({
+  roomId,
+  roomName,
+  roomRole,
+  readOnly = false,
+  description,
+  fullHeight = false,
+}: Props) {
   const { data: session } = useSession();
   const [content, setContent] = useState("");
   const [anonymous, setAnonymous] = useState(false);
@@ -116,9 +127,11 @@ export function ChatRoom({ roomId, roomName }: Props) {
     if (!session || !content.trim()) {
       return;
     }
+    if (readOnly && roomRole !== "owner") {
+      return;
+    }
     const text = content;
     setContent("");
-
     await fetch("/api/chat/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -142,13 +155,36 @@ export function ChatRoom({ roomId, roomName }: Props) {
     mutate();
   };
 
+  const readOnlyRestriction = readOnly && roomRole !== "owner";
+
+  const containerHeightClass = fullHeight
+    ? "h-[calc(100vh-8rem)] min-h-[28rem]"
+    : "h-[32rem]";
+
   return (
-    <div className="flex h-[32rem] flex-col rounded-3xl border border-border-light/70 bg-surface-light p-6 shadow-sm dark:border-border-dark/70 dark:bg-surface-dark">
-      <div className="mb-3">
+    <div
+      className={`flex flex-col rounded-3xl border border-border-light/70 bg-surface-light p-6 shadow-sm dark:border-border-dark/70 dark:bg-surface-dark ${containerHeightClass}`}
+    >
+      <div className="mb-3 flex items-center justify-between">
         <p className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
           {roomName}
         </p>
+        {readOnly && (
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-700 dark:bg-amber-500/20 dark:text-amber-100">
+            읽기 전용
+          </span>
+        )}
       </div>
+      {description && (
+        <p className="mb-3 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+          {description}
+        </p>
+      )}
+      {readOnlyRestriction && (
+        <p className="mb-3 rounded-2xl bg-amber-50 p-3 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-100">
+          방장이 읽기 전용으로 설정한 채널입니다. 메시지를 읽기만 할 수 있어요.
+        </p>
+      )}
       <div className="flex-1 overflow-y-auto space-y-3 pr-2">
         {(data?.messages ?? []).map((message) => (
           <div
@@ -213,13 +249,15 @@ export function ChatRoom({ roomId, roomName }: Props) {
             value={content}
             onChange={(event) => setContent(event.target.value)}
             placeholder="메시지를 입력하세요"
+            disabled={readOnlyRestriction}
             className="flex-1 rounded-2xl border border-border-light/70 bg-background-light px-4 py-3 text-sm text-text-primary-light outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/30 dark:border-border-dark/70 dark:bg-background-dark dark:text-text-primary-dark"
           />
           <button
             type="submit"
+            disabled={!session || readOnlyRestriction}
             className="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
           >
-            전송
+            {readOnlyRestriction ? "읽기 전용" : "전송"}
           </button>
         </div>
       </form>

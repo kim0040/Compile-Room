@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDateTime, formatRelativeTime } from "@/lib/format";
 import { ProfileActions } from "@/components/profile-actions";
 import { ProfileSettings } from "@/components/profile-settings";
+import { decryptClassYear } from "@/lib/personal-data";
 
 export default async function ProfilePage() {
   const session = await getServerAuthSession();
@@ -25,6 +26,8 @@ export default async function ProfilePage() {
   if (!user) {
     redirect("/login");
   }
+
+  const displayClassYear = decryptClassYear(user.classYear);
 
   // 좋아요/즐겨찾기 현황 (총 개수)
   const [
@@ -119,7 +122,7 @@ export default async function ProfilePage() {
               학번
             </p>
             <p className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">
-              {user.classYear ?? "등록되지 않음"}
+              {displayClassYear ?? "등록되지 않음"}
             </p>
           </div>
           <div className="rounded-2xl border border-border-light/70 bg-background-light/60 p-4 dark:border-border-dark/70 dark:bg-background-dark/40">
@@ -135,7 +138,7 @@ export default async function ProfilePage() {
 
       <ProfileSettings
         initialName={user.name}
-        initialClassYear={user.classYear}
+        initialClassYear={displayClassYear}
         initialGrade={user.currentGrade ?? null}
       />
 

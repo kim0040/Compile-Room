@@ -51,6 +51,8 @@ export default async function ChatPage() {
     description: room.description,
     isPrivate: room.isPrivate,
     isDefault: room.isDefault,
+    readOnly: room.readOnly,
+    maxMembers: room.maxMembers,
     ownerName: room.owner.name,
     memberCount: room._count.members,
     messageCount: room._count.messages,

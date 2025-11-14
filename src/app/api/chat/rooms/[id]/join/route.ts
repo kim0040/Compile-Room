@@ -23,6 +23,9 @@ export async function POST(
 
   const room = await prisma.chatRoom.findUnique({
     where: { id: roomId },
+    include: {
+      _count: { select: { members: true } },
+    },
   });
   if (!room) {
     return NextResponse.json({ message: "존재하지 않는 채팅방입니다." }, { status: 404 });
@@ -69,3 +72,12 @@ export async function POST(
 
   return NextResponse.json({ joined: true });
 }
+  if (
+    room.maxMembers &&
+    room._count.members >= room.maxMembers
+  ) {
+    return NextResponse.json(
+      { message: "채팅방 정원이 가득 찼습니다." },
+      { status: 403 },
+    );
+  }

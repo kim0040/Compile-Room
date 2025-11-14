@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { label: "학과 정보", href: "/department" },
   { label: "게시판", href: "/posts" },
   { label: "채팅", href: "/chat" },
+  { label: "사용자", href: "/users" },
 ];
 
 export function Header() {
@@ -77,35 +78,16 @@ export function Header() {
           >
             자료 올리기
           </Link>
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-full border border-border-light/70 p-2 text-text-primary-light transition hover:border-primary/40 hover:text-primary md:hidden"
-            onClick={() => setMenuOpen((prev) => !prev)}
-            aria-label="모바일 메뉴"
-          >
-            {menuOpen ? "✕" : "☰"}
-          </button>
           {isAuth ? (
-            <>
-              <button
-                type="button"
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="rounded-full border border-border-light/70 px-4 py-2 text-sm font-semibold text-text-primary-light transition hover:border-primary/40 hover:text-primary dark:border-border-dark/70 dark:text-text-primary-dark"
-              >
-                로그아웃
-              </button>
-              <Link
-                href="/profile"
-                className="flex items-center gap-2 rounded-full border border-border-light/60 px-3 py-1 text-xs text-text-secondary-light transition hover:border-primary/40 hover:text-primary dark:border-border-dark/60 dark:text-text-secondary-dark dark:hover:text-primary"
-              >
-                <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">
-                  {session?.user?.name}
-                </span>
-                <span className="text-text-secondary-light dark:text-text-secondary-dark">
-                  {session?.user?.classYear ?? ""}
-                </span>
-              </Link>
-            </>
+            <Link
+              href="/profile"
+              className="hidden items-center gap-2 rounded-full border border-border-light/60 px-3 py-1 text-xs font-semibold text-text-primary-light transition hover:border-primary/40 hover:text-primary dark:border-border-dark/60 dark:text-text-primary-dark md:flex"
+            >
+              <span>{session?.user?.name}</span>
+              <span className="text-text-secondary-light dark:text-text-secondary-dark">
+                {session?.user?.classYear ?? ""}
+              </span>
+            </Link>
           ) : (
             <Link
               href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}
@@ -114,6 +96,14 @@ export function Header() {
               로그인
             </Link>
           )}
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-full border border-border-light/70 p-2 text-text-primary-light transition hover:border-primary/40 hover:text-primary dark:border-border-dark/70 dark:text-text-primary-dark"
+            onClick={() => setMenuOpen((prev) => !prev)}
+            aria-label="전체 메뉴 열기"
+          >
+            {menuOpen ? "✕" : "☰"}
+          </button>
         </div>
       </div>
       <div className="border-t border-border-light/70 bg-surface-light px-4 py-2 text-sm font-semibold text-text-secondary-light dark:border-border-dark/70 dark:bg-surface-dark dark:text-text-secondary-dark md:hidden">
@@ -173,13 +163,25 @@ export function Header() {
               자료 올리기
             </Link>
             {isAuth ? (
-              <Link
-                href="/profile"
-                onClick={handleNavClick}
-                className="rounded-xl border border-border-light/60 px-4 py-2 text-center font-semibold text-text-primary-light dark:border-border-dark/60 dark:text-text-primary-dark"
-              >
-                프로필 보기
-              </Link>
+              <>
+                <Link
+                  href="/profile"
+                  onClick={handleNavClick}
+                  className="rounded-xl border border-border-light/60 px-4 py-2 text-center font-semibold text-text-primary-light dark:border-border-dark/60 dark:text-text-primary-dark"
+                >
+                  프로필 보기
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleNavClick();
+                    signOut({ callbackUrl: "/" });
+                  }}
+                  className="rounded-xl border border-border-light/70 px-4 py-2 text-center font-semibold text-text-primary-light transition hover:border-primary/40 hover:text-primary dark:border-border-dark/70 dark:text-text-primary-dark"
+                >
+                  로그아웃
+                </button>
+              </>
             ) : (
               <Link
                 href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}

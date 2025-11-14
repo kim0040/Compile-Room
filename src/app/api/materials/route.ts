@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { decryptClassYear } from "@/lib/personal-data";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
         ]
       : [{ createdAt: "desc" as const }];
 
-  const materials = await prisma.material.findMany({
+  const materialsRaw = await prisma.material.findMany({
     where,
     orderBy,
     include: {
@@ -32,6 +33,14 @@ export async function GET(request: NextRequest) {
       _count: { select: { comments: true } },
     },
   });
+
+  const materials = materialsRaw.map((material) => ({
+    ...material,
+    author: {
+      ...material.author,
+      classYear: decryptClassYear(material.author.classYear),
+    },
+  }));
 
   return NextResponse.json({ materials });
 }

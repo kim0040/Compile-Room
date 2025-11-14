@@ -7,6 +7,8 @@ import { CommentForm } from "@/components/comment-form";
 import { MATERIAL_TYPE_LABELS } from "@/constants/material";
 import { MaterialDownloadButton } from "@/components/material-download-button";
 import { MaterialPreferences } from "@/components/material-preferences";
+import { getServerAuthSession } from "@/lib/auth";
+import { MaterialDeleteButton } from "@/components/material-delete-button";
 
 type Params = Promise<{ id: string }>;
 
@@ -49,6 +51,11 @@ export default async function MaterialDetail({
   if (!material) {
     notFound();
   }
+  const session = await getServerAuthSession();
+  const canDelete =
+    !!session &&
+    (session.user?.id === material.authorId ||
+      session.user?.role === "admin");
 
   return (
     <div className="space-y-8 py-4">
@@ -74,7 +81,20 @@ export default async function MaterialDetail({
               {material.downloadCount.toLocaleString()}
             </p>
           </div>
-          <MaterialDownloadButton materialId={material.id} />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <MaterialDownloadButton materialId={material.id} />
+            {canDelete && (
+              <MaterialDeleteButton materialId={material.id} />
+            )}
+            {(!session || session.user?.id !== material.authorId) && (
+              <Link
+                href={`/users/${material.authorId}`}
+                className="rounded-full border border-border-light/70 px-4 py-2 text-sm font-semibold text-text-primary-light transition hover:border-primary/40 hover:text-primary dark:border-border-dark/70 dark:text-text-primary-dark"
+              >
+                프로필 / 쪽지
+              </Link>
+            )}
+          </div>
         </div>
         <MaterialPreferences materialId={material.id} />
         <p className="mt-6 text-base leading-relaxed text-text-secondary-light dark:text-text-secondary-dark">
@@ -86,9 +106,12 @@ export default async function MaterialDetail({
             <p className="text-xs font-semibold uppercase text-text-secondary-light/80 dark:text-text-secondary-dark/70">
               작성자
             </p>
-            <p className="text-base font-semibold text-text-primary-light dark:text-text-primary-dark">
+            <Link
+              href={`/users/${material.authorId}`}
+              className="text-base font-semibold text-text-primary-light transition hover:text-primary dark:text-text-primary-dark"
+            >
               {material.author.name}
-            </p>
+            </Link>
             <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
               {material.author.classYear ?? "학번 미등록"}
             </p>
@@ -137,7 +160,12 @@ export default async function MaterialDetail({
                   className="rounded-2xl border border-border-light/60 bg-background-light/80 p-4 dark:border-border-dark/60 dark:bg-background-dark/40"
                 >
                   <div className="flex items-center gap-2 text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
-                    {comment.author.name}
+                    <Link
+                      href={`/users/${comment.author.id}`}
+                      className="transition hover:text-primary"
+                    >
+                      {comment.author.name}
+                    </Link>
                     <span className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
                       {comment.author.classYear ?? ""}
                     </span>

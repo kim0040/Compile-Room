@@ -7,6 +7,7 @@ import { decryptText, encryptText } from "@/lib/crypto";
 import { buildAnonymousSeed, generateAnonymousName } from "@/utils/alias";
 import { rateLimit } from "@/lib/ratelimit";
 import { getClientIp } from "@/lib/request-ip";
+import { decryptClassYear } from "@/lib/personal-data";
 
 /**
  * GET /api/chat/messages
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
         : false,
       author: {
         name: message.author.name,
-        classYear: message.author.classYear,
+        classYear: decryptClassYear(message.author.classYear),
       },
     })),
   });
@@ -96,12 +97,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const member = await prisma.chatRoomMember.findFirst({
-    where: { roomId: Number(roomId), userId: session.user.id },
-  });
+  const [member, room] = await Promise.all([
+    prisma.chatRoomMember.findFirst({
+      where: { roomId: Number(roomId), userId: session.user.id },
+    }),
+    prisma.chatRoom.findUnique({
+      where: { id: Number(roomId) },
+      select: { readOnly: true },
+    }),
+  ]);
   if (!member) {
     return NextResponse.json(
       { message: "채팅방에 참여한 후 이용해주세요." },
+      { status: 403 },
+    );
+  }
+
+  if (room?.readOnly && member.role !== "owner") {
+    return NextResponse.json(
+      { message: "이 채팅방은 읽기 전용 상태입니다." },
       { status: 403 },
     );
   }
@@ -139,7 +153,7 @@ export async function POST(request: NextRequest) {
       displayName: message.authorDisplayName || message.author.name,
       author: {
         name: message.author.name,
-        classYear: message.author.classYear,
+        classYear: decryptClassYear(message.author.classYear),
       },
     },
   });

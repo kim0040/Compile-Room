@@ -128,7 +128,13 @@ export default async function Home({
                     {material.title}
                   </Link>
                   <p className="mt-1 text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                    {material.subject} · {material.author.name}
+                    {material.subject} ·{" "}
+                    <Link
+                      href={`/users/${material.author.id}`}
+                      className="font-semibold text-text-primary-light transition hover:text-primary dark:text-text-primary-dark"
+                    >
+                      {material.author.name}
+                    </Link>
                   </p>
                 </li>
               ))}
@@ -246,7 +252,12 @@ export default async function Home({
                   {post.content}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                  <span>{post.author.name}</span>
+                  <Link
+                    href={`/users/${post.author.id}`}
+                    className="font-semibold text-text-primary-light transition hover:text-primary dark:text-text-primary-dark"
+                  >
+                    {post.author.name}
+                  </Link>
                   <span className="rounded-full bg-primary/10 px-3 py-0.5 text-primary">
                     {post.category}
                   </span>

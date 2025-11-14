@@ -4,6 +4,12 @@ import type { NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { getServerSession } from "next-auth";
 import { prisma } from "./prisma";
+import {
+  isLoginLocked,
+  registerLoginFailure,
+  resetLoginAttempts,
+} from "./login-attempts";
+import { decryptClassYear } from "./personal-data";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -25,24 +31,42 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const identifier = credentials.email.toLowerCase();
+        const lockInfo = isLoginLocked(identifier);
+        if (lockInfo.locked) {
+          throw new Error("LOCKED");
+        }
+
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
         if (!user || !user.passwordHash) {
+          const failure = registerLoginFailure(identifier);
+          if (failure.locked) {
+            throw new Error("LOCKED");
+          }
           return null;
         }
 
         const isValid = await compare(credentials.password, user.passwordHash);
         if (!isValid) {
+          const failure = registerLoginFailure(identifier);
+          if (failure.locked) {
+            throw new Error("LOCKED");
+          }
           return null;
         }
+
+        resetLoginAttempts(identifier);
+
+        const decryptedClassYear = decryptClassYear(user.classYear);
 
         return {
           id: String(user.id),
           name: user.name,
           email: user.email,
-          classYear: user.classYear ?? undefined,
+          classYear: decryptedClassYear ?? undefined,
           role: user.role,
           currentGrade: user.currentGrade ?? undefined,
         };
@@ -75,11 +99,11 @@ export const authOptions: NextAuthOptions = {
           where: { id: session.user.id },
           select: { name: true, classYear: true, currentGrade: true },
         });
-        if (freshUser) {
-          session.user.name = freshUser.name;
-          session.user.classYear = freshUser.classYear ?? null;
-          session.user.currentGrade = freshUser.currentGrade ?? null;
-        }
+          if (freshUser) {
+            session.user.name = freshUser.name;
+            session.user.classYear = decryptClassYear(freshUser.classYear) ?? null;
+            session.user.currentGrade = freshUser.currentGrade ?? null;
+          }
       } catch (error) {
         // noop: 세션 반환은 계속 진행
       }
