@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { AuthProvider } from "@/components/auth/session-provider";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { ThemeScript } from "@/components/theme/theme-script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -32,17 +34,20 @@ export default function RootLayout({
         <link rel="icon" href="/compileroom-logo.png" sizes="any" type="image/png" />
         <link rel="shortcut icon" href="/compileroom-logo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/compileroom-logo.png" />
+        <ThemeScript />
       </head>
-      <body className="min-h-screen bg-background-light text-text-primary-light antialiased">
-        <AuthProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1 bg-background-light px-4 py-6 sm:px-6 lg:px-8">
-              <div className="mx-auto w-full max-w-6xl">{children}</div>
-            </main>
-            <Footer />
-          </div>
-        </AuthProvider>
+      <body className="min-h-screen bg-background-light text-text-primary-light antialiased transition-colors duration-300 dark:bg-background-dark dark:text-text-primary-dark">
+        <ThemeProvider>
+          <AuthProvider>
+            <div className="flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-1 bg-background-light px-4 py-6 transition-colors duration-300 dark:bg-background-dark sm:px-6 lg:px-8">
+                <div className="mx-auto w-full max-w-screen-2xl">{children}</div>
+              </main>
+              <Footer />
+            </div>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

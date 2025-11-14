@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
@@ -37,9 +38,21 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const messageInclude: Prisma.ChatMessageInclude = {
+    author: true,
+    _count: { select: { reactions: true } },
+  };
+
+  if (session?.user?.id) {
+    messageInclude.reactions = {
+      where: { userId: session.user.id },
+      select: { id: true },
+    };
+  }
+
   const messages = await prisma.chatMessage.findMany({
     where: { roomId },
-    include: { author: true },
+    include: messageInclude,
     orderBy: { createdAt: "asc" },
     take: 200,
   });
@@ -50,6 +63,10 @@ export async function GET(request: NextRequest) {
       content: decryptText(message.content),
       createdAt: message.createdAt,
       displayName: message.authorDisplayName || message.author.name,
+      reactionCount: message._count.reactions,
+      userReacted: session?.user?.id
+        ? (message.reactions?.length ?? 0) > 0
+        : false,
       author: {
         name: message.author.name,
         classYear: message.author.classYear,

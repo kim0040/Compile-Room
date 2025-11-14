@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { formatRelativeTime } from "@/lib/format";
 
+// 채팅 메시지를 주기적으로 불러오는 fetcher
 const fetcher = (url: string) =>
   fetch(url, { credentials: "include" }).then((res) => {
     if (!res.ok) {
@@ -19,6 +20,8 @@ type Message = {
   content: string;
   createdAt: string;
   displayName: string;
+  reactionCount: number;
+  userReacted: boolean;
   author: {
     name: string;
     classYear?: string | null;
@@ -38,8 +41,11 @@ export function ChatRoom({ roomId, roomName }: Props) {
   const [aliasLoading, setAliasLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
+  // 로그인 + 채팅방 ID가 모두 있을 때만 메시지를 폴링
+  const shouldFetch = Boolean(roomId && session);
+
   const { data, mutate } = useSWR<{ messages: Message[] }>(
-    roomId ? `/api/chat/messages?roomId=${roomId}` : null,
+    shouldFetch ? `/api/chat/messages?roomId=${roomId}` : null,
     fetcher,
     {
       refreshInterval: 4000,
@@ -48,8 +54,9 @@ export function ChatRoom({ roomId, roomName }: Props) {
 
   // 스크롤을 최신 메시지로 이동
   useEffect(() => {
+    if (!data?.messages) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [data?.messages.length]);
+  }, [data?.messages?.length]);
 
   // 익명 모드 시 사용할 별칭을 서버에서 가져온다.
   useEffect(() => {
@@ -106,7 +113,7 @@ export function ChatRoom({ roomId, roomName }: Props) {
   // 메시지 전송 핸들러
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!content.trim()) {
+    if (!session || !content.trim()) {
       return;
     }
     const text = content;
@@ -123,6 +130,15 @@ export function ChatRoom({ roomId, roomName }: Props) {
       }),
     });
 
+    mutate();
+  };
+
+  const handleReact = async (messageId: number) => {
+    if (!session) return;
+    await fetch(`/api/chat/messages/${messageId}/reaction`, {
+      method: "POST",
+      credentials: "include",
+    });
     mutate();
   };
 
@@ -157,6 +173,18 @@ export function ChatRoom({ roomId, roomName }: Props) {
             <p className="mt-1 text-text-secondary-light dark:text-text-secondary-dark">
               {message.content}
             </p>
+            <button
+              type="button"
+              disabled={!session}
+              onClick={() => handleReact(message.id)}
+              className={`mt-2 inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold ${
+                message.userReacted
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border-light/60 text-text-secondary-light dark:border-border-dark/60 dark:text-text-secondary-dark"
+              } disabled:cursor-not-allowed disabled:opacity-60`}
+            >
+              공감 {message.reactionCount}
+            </button>
           </div>
         ))}
         <div ref={bottomRef} />

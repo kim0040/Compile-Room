@@ -71,18 +71,32 @@ export async function getMaterialById(
 }
 
 export async function getMaterialStats() {
-  const [totalMaterials, totalDownloads, totalMembers] = await Promise.all([
+  const [
+    totalMaterials,
+    totalDownloads,
+    totalMembers,
+    materialLikes,
+    materialFavorites,
+    postLikes,
+    postFavorites,
+  ] = await Promise.all([
     prisma.material.count(),
     prisma.material.aggregate({
       _sum: { downloadCount: true },
     }),
     prisma.user.count(),
+    prisma.materialLike.count(),
+    prisma.materialFavorite.count(),
+    prisma.postLike.count(),
+    prisma.postFavorite.count(),
   ]);
 
   return {
     totalMaterials,
     totalDownloads: totalDownloads._sum.downloadCount ?? 0,
     totalMembers,
+    totalLikes: materialLikes + postLikes,
+    totalFavorites: materialFavorites + postFavorites,
   };
 }
 

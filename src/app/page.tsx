@@ -76,6 +76,8 @@ export default async function Home({
             materials={stats.totalMaterials}
             downloads={stats.totalDownloads}
             members={stats.totalMembers}
+            likes={stats.totalLikes}
+            favorites={stats.totalFavorites}
           />
           <CountdownTimer targetDate={FALL_TERM_END} />
           <div className="flex flex-wrap gap-3 text-sm text-text-secondary-light dark:text-text-secondary-dark">

@@ -32,7 +32,7 @@ export const departmentOverview = {
 export const yearlyCurriculum: YearCurriculum[] = [
   {
     year: 1,
-    title: "1학년 · 기초 역량",
+    title: "기초 역량",
     summary:
       "논리적 사고와 글쓰기, 글로벌 의사소통, 컴퓨팅 사고, 이산수학·선형대수 등 기초 학문과 함께 C, 파이썬 기반 기초 SW 역량을 다집니다.",
     required: [
@@ -50,7 +50,7 @@ export const yearlyCurriculum: YearCurriculum[] = [
   },
   {
     year: 2,
-    title: "2학년 · 핵심 전공 토대",
+    title: "핵심 전공 토대",
     summary:
       "자료구조·알고리즘·운영체제·컴퓨터구조 등 필수 전공을 중심으로 서버/자바/웹 프로그래밍 실습을 통해 개발 역량을 확장합니다.",
     required: ["자료구조", "컴퓨터구조", "알고리즘"],
@@ -63,7 +63,7 @@ export const yearlyCurriculum: YearCurriculum[] = [
   },
   {
     year: 3,
-    title: "3학년 · 심화·트랙 선택",
+    title: "심화·트랙 선택",
     summary:
       "데이터베이스·네트워크 필수 이수 후 빅데이터, 모바일, 임베디드, AI 등 희망 트랙을 선택해 프로젝트 기반 학습을 수행합니다.",
     required: ["데이터베이스", "컴퓨터네트워크"],
@@ -79,7 +79,7 @@ export const yearlyCurriculum: YearCurriculum[] = [
   },
   {
     year: 4,
-    title: "4학년 · 캡스톤/진로 준비",
+    title: "캡스톤/진로 준비",
     summary:
       "산업체 연계 캡스톤디자인을 수행하며, 분산처리·IoT·정보보호·해킹대응 등 심화 과목과 연구 프로젝트를 통해 진로를 확정합니다.",
     required: ["캡스톤디자인"],

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime, formatRelativeTime } from "@/lib/format";
 import { PostViewTracker } from "@/components/post-view-tracker";
+import { PostPreferences } from "@/components/post-preferences";
 
 type Params = Promise<{ id: string }>;
 
@@ -73,6 +74,7 @@ export default async function PostDetail({ params }: { params: Params }) {
             </span>
           )}
         </div>
+        <PostPreferences postId={post.id} />
         <div className="prose prose-sm mt-6 max-w-none text-text-primary-light dark:prose-invert dark:text-text-primary-dark">
           {post.content.split("\n").map((line, index) => (
             <p key={index}>{line || <>&nbsp;</>}</p>

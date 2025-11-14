@@ -6,6 +6,7 @@ import { formatDateTime, formatRelativeTime } from "@/lib/format";
 import { CommentForm } from "@/components/comment-form";
 import { MATERIAL_TYPE_LABELS } from "@/constants/material";
 import { MaterialDownloadButton } from "@/components/material-download-button";
+import { MaterialPreferences } from "@/components/material-preferences";
 
 type Params = Promise<{ id: string }>;
 
@@ -75,6 +76,7 @@ export default async function MaterialDetail({
           </div>
           <MaterialDownloadButton materialId={material.id} />
         </div>
+        <MaterialPreferences materialId={material.id} />
         <p className="mt-6 text-base leading-relaxed text-text-secondary-light dark:text-text-secondary-dark">
           {material.description}
         </p>

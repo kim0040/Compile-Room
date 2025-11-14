@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 const NAV_LINKS = [
   { label: "홈", href: "/" },
@@ -25,7 +26,7 @@ export function Header() {
 
   return (
     <header className="bg-surface-light dark:bg-surface-dark/90 backdrop-blur border-b border-border-light/70 dark:border-border-dark/60 sticky top-0 z-30">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 w-full max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3">
           <Image
             src="/compileroom-logo.png"
@@ -69,6 +70,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle className="hidden md:flex" />
           <Link
             href="/upload"
             className="hidden rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/20 sm:inline-block"
@@ -114,6 +116,30 @@ export function Header() {
           )}
         </div>
       </div>
+      <div className="border-t border-border-light/70 bg-surface-light px-4 py-2 text-sm font-semibold text-text-secondary-light dark:border-border-dark/70 dark:bg-surface-dark dark:text-text-secondary-dark md:hidden">
+        <div className="flex items-center gap-3 overflow-x-auto">
+          {NAV_LINKS.map((item) => {
+            const active =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={`mobile-inline-${item.label}`}
+                href={item.href}
+                onClick={handleNavClick}
+                className={`whitespace-nowrap rounded-full px-3 py-1 ${
+                  active
+                    ? "bg-primary/10 text-primary"
+                    : "bg-background-light text-text-primary-light dark:bg-background-dark dark:text-text-primary-dark"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
       {menuOpen && (
         <div className="border-t border-border-light/70 bg-surface-light px-4 py-4 text-sm text-text-secondary-light shadow-lg dark:border-border-dark/70 dark:bg-surface-dark md:hidden">
           <nav className="flex flex-col gap-3">
@@ -122,22 +148,22 @@ export function Header() {
                 item.href === "/"
                   ? pathname === "/"
                   : pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={`mobile-${item.label}`}
-                  href={item.href}
-                  onClick={handleNavClick}
-                  className={`rounded-xl px-3 py-2 font-semibold ${
-                    active
-                      ? "bg-primary/10 text-primary"
-                      : "bg-background-light text-text-primary-light dark:bg-background-dark dark:text-text-primary-dark"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+            return (
+              <Link
+                key={`mobile-${item.label}`}
+                href={item.href}
+                onClick={handleNavClick}
+                className={`rounded-xl px-3 py-2 font-semibold ${
+                  active
+                    ? "bg-primary/10 text-primary"
+                    : "bg-background-light text-text-primary-light dark:bg-background-dark dark:text-text-primary-dark"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
           <div className="mt-4 flex flex-col gap-2">
             <Link
               href="/upload"
@@ -163,6 +189,7 @@ export function Header() {
                 로그인
               </Link>
             )}
+            <ThemeToggle fullWidth className="mt-2" />
           </div>
         </div>
       )}

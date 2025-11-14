@@ -2,6 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime, formatRelativeTime } from "@/lib/format";
 import { CreatePostForm } from "@/components/create-post-form";
+import { getServerAuthSession } from "@/lib/auth";
+import { ChatRoom } from "@/components/chat-room";
 
 const POST_CATEGORIES = ["전체", "전공", "교양", "공지", "취업/진로", "스터디", "기타"];
 
@@ -14,12 +16,40 @@ export default async function PostsPage({
 }) {
   const { category = "전체" } = await searchParams;
   const activeCategory = POST_CATEGORIES.includes(category) ? category : "전체";
-  const posts = await prisma.post.findMany({
+  const sessionPromise = getServerAuthSession();
+  const postsPromise = prisma.post.findMany({
     where:
       activeCategory !== "전체" ? { category: activeCategory } : undefined,
     include: { author: true },
     orderBy: { createdAt: "desc" },
   });
+  const [session, posts] = await Promise.all([sessionPromise, postsPromise]);
+
+  // 게시판 페이지에서도 즉시 채팅할 수 있도록 기본 채팅방을 미리 확보
+  let boardChatRoom =
+    (await prisma.chatRoom.findFirst({
+      where: { isDefault: true },
+      select: { id, name },
+    })) ??
+    (await prisma.chatRoom.findFirst({
+      select: { id, name },
+    }));
+
+  if (session?.user?.id && boardChatRoom) {
+    await prisma.chatRoomMember.upsert({
+      where: {
+        roomId_userId: {
+          roomId: boardChatRoom.id,
+          userId: session.user.id,
+        },
+      },
+      update: {},
+      create: {
+        roomId: boardChatRoom.id,
+        userId: session.user.id,
+      },
+    });
+  }
 
   return (
     <div className="space-y-8 py-4">
@@ -35,6 +65,25 @@ export default async function PostsPage({
         </div>
         <CreatePostForm />
       </section>
+
+      {boardChatRoom ? (
+        <section className="rounded-3xl border border-border-light/70 bg-surface-light p-6 shadow-sm dark:border-border-dark/70 dark:bg-surface-dark">
+          <div className="mb-4 flex flex-col gap-1">
+            <p className="text-sm font-semibold text-primary">게시판 실시간 채팅</p>
+            <h2 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">
+              글을 읽으면서 바로 의견을 나눠보세요
+            </h2>
+            <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+              게시판 이용 중에도 동일한 채팅방(공감 기능 포함)을 그대로 이용할 수 있습니다.
+            </p>
+          </div>
+          <ChatRoom roomId={boardChatRoom.id} roomName={boardChatRoom.name} />
+        </section>
+      ) : (
+        <section className="rounded-3xl border border-dashed border-border-light/70 bg-background-light/60 p-6 text-sm text-text-secondary-light dark:border-border-dark/70 dark:bg-background-dark/40 dark:text-text-secondary-dark">
+          채팅방 정보를 불러오지 못했습니다. 채팅 메뉴에서 다시 시도해주세요.
+        </section>
+      )}
 
       <section className="space-y-4">
         <div className="flex flex-wrap gap-2">

@@ -35,6 +35,11 @@ model User {
   chatMessages ChatMessage[]
   chatRooms    ChatRoom[] @relation("RoomOwner")
   memberships  ChatRoomMember[]
+  materialLikes    MaterialLike[]
+  materialFavorites MaterialFavorite[]
+  postLikes        PostLike[]
+  postFavorites    PostFavorite[]
+  chatReactions    ChatMessageReaction[]
   accounts     Account[]
   sessions     Session[]
 }
@@ -55,6 +60,8 @@ model Material {
   authorId       Int
   author         User          @relation(fields: [authorId], references: [id])
   comments       Comment[]
+  likes          MaterialLike[]
+  favorites      MaterialFavorite[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -85,6 +92,8 @@ model Post {
   isExample Boolean  @default(false)
   authorId  Int
   author    User     @relation(fields: [authorId], references: [id])
+  likes     PostLike[]
+  favorites PostFavorite[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -99,6 +108,7 @@ model ChatMessage {
   roomId    Int
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  reactions ChatMessageReaction[]
   createdAt DateTime @default(now())
 
   @@index([roomId, createdAt])
@@ -166,4 +176,64 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model MaterialLike {
+  id         Int      @id @default(autoincrement())
+  materialId Int
+  userId     Int
+  createdAt  DateTime @default(now())
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([materialId, userId])
+  @@index([userId])
+}
+
+model MaterialFavorite {
+  id         Int      @id @default(autoincrement())
+  materialId Int
+  userId     Int
+  createdAt  DateTime @default(now())
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([materialId, userId])
+  @@index([userId])
+}
+
+model PostLike {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  userId    Int
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+model PostFavorite {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  userId    Int
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+model ChatMessageReaction {
+  id        Int      @id @default(autoincrement())
+  messageId Int
+  userId    Int
+  createdAt DateTime @default(now())
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId])
 }
