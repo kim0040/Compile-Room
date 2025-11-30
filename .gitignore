@@ -12,10 +12,16 @@
 
 # testing
 /coverage
+__tests__/
+**/*.test.*
+**/*.spec.*
 
 # next.js
 /.next/
 /out/
+/.cache
+/.npm-cache
+/.prisma-cache
 
 # production
 /build
