@@ -24,8 +24,11 @@ export function PostCommentForm({ postId }) {
     );
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const submitComment = async () => {
+    if (!content.trim()) {
+      setError("댓글을 입력해주세요.");
+      return;
+    }
     setStatus("loading");
     setError("");
 
@@ -51,6 +54,18 @@ export function PostCommentForm({ postId }) {
     }
   };
 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    await submitComment();
+  };
+
+  const handleKeyDown = async (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      await submitComment();
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
@@ -60,6 +75,7 @@ export function PostCommentForm({ postId }) {
         <textarea
           value={content}
           onChange={(event) => setContent(event.target.value)}
+          onKeyDown={handleKeyDown}
           rows={3}
           required
           maxLength={500}

@@ -11,6 +11,15 @@ import {
   isMaterialType,
 } from "@/types/material-type";
 
+// App Route body size 제한을 늘려 3MB 파일 업로드를 허용 (기본 1MB)
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "6mb",
+    },
+  },
+};
+
 const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 const ALLOWED_MIME_TYPES = new Set([
   "application/pdf",
