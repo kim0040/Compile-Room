@@ -10,9 +10,12 @@ import { PostCommentForm } from "@/components/post-comment-form";
 import { getUserCode } from "@/lib/user-tag";
 
 export async function generateMetadata({ params }) {
-  const { id } = params;
+  const postId = Number(params.id);
+  if (Number.isNaN(postId)) {
+    return { title: "게시글을 찾을 수 없습니다 - 컴파일룸" };
+  }
   const post = await prisma.post.findUnique({
-    where: { id: Number(id) },
+    where: { id: postId },
   });
 
   if (!post) {
@@ -26,8 +29,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function PostDetail({ params }) {
-  const { id } = params;
-  const postId = Number(id);
+  const postId = Number(params.id);
   if (Number.isNaN(postId)) {
     notFound();
   }
