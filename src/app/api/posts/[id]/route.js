@@ -9,7 +9,8 @@ export async function DELETE(_request, { params }) {
     return NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 });
   }
 
-  const postId = Number(params.id);
+  const resolvedParams = await params;
+  const postId = Number(resolvedParams?.id);
   if (Number.isNaN(postId)) {
     return NextResponse.json(
       { message: "잘못된 게시글 ID 입니다." },

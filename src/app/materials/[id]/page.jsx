@@ -11,7 +11,8 @@ import { MaterialDeleteButton } from "@/components/material-delete-button";
 import { getUserCode } from "@/lib/user-tag";
 
 export async function generateMetadata({ params }) {
-  const materialId = Number(params?.id);
+  const resolvedParams = await params;
+  const materialId = Number(resolvedParams?.id);
   if (!Number.isInteger(materialId)) {
     return {
       title: "자료를 찾을 수 없습니다 - 컴파일룸",
@@ -30,7 +31,8 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function MaterialDetail({ params }) {
-  const materialId = Number(params?.id);
+  const resolvedParams = await params;
+  const materialId = Number(resolvedParams?.id);
   if (!Number.isInteger(materialId)) {
     notFound();
   }

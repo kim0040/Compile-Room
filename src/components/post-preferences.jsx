@@ -15,14 +15,15 @@ const fetcher = (url) =>
     .catch(() => ({ likes: 0, favorites: 0, user: { liked: false, favorited: false } }));
 
 export function PostPreferences({ postId }) {
+  const isValidId = Number.isInteger(postId);
   const { data, mutate } = useSWR(
-    `/api/posts/${postId}/preference`,
+    isValidId ? `/api/posts/${postId}/preference` : null,
     fetcher,
   );
   const { data: session } = useSession();
 
   const toggle = async (kind) => {
-    if (!session) return;
+    if (!session || !isValidId) return;
     const response = await fetch(`/api/posts/${postId}/preference`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -38,7 +39,7 @@ export function PostPreferences({ postId }) {
     <div className="mt-4 flex flex-wrap gap-3 text-sm">
       <button
         type="button"
-        disabled={!session}
+        disabled={!session || !isValidId}
         onClick={() => toggle("like")}
         className={`inline-flex items-center gap-1 rounded-full border px-4 py-2 font-semibold transition ${
           data?.user?.liked
@@ -50,7 +51,7 @@ export function PostPreferences({ postId }) {
       </button>
       <button
         type="button"
-        disabled={!session}
+        disabled={!session || !isValidId}
         onClick={() => toggle("favorite")}
         className={`inline-flex items-center gap-1 rounded-full border px-4 py-2 font-semibold transition ${
           data?.user?.favorited

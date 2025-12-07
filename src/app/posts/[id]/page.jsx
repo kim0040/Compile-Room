@@ -8,9 +8,11 @@ import { getServerAuthSession } from "@/lib/auth";
 import { PostDeleteButton } from "@/components/post-delete-button";
 import { PostCommentForm } from "@/components/post-comment-form";
 import { getUserCode } from "@/lib/user-tag";
+import { decryptClassYear } from "@/lib/personal-data";
 
 export async function generateMetadata({ params }) {
-  const postId = Number(params?.id);
+  const resolvedParams = await params;
+  const postId = Number(resolvedParams?.id);
   if (!Number.isInteger(postId)) {
     return { title: "게시글을 찾을 수 없습니다 - 컴파일룸" };
   }
@@ -29,7 +31,8 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function PostDetail({ params }) {
-  const postId = Number(params?.id);
+  const resolvedParams = await params;
+  const postId = Number(resolvedParams?.id);
   if (!Number.isInteger(postId)) {
     notFound();
   }
@@ -48,6 +51,20 @@ export default async function PostDetail({ params }) {
   if (!post) {
     notFound();
   }
+
+  const sanitizeUser = (user) => ({
+    ...user,
+    classYear: decryptClassYear(user.classYear),
+  });
+  const hydratedPost = {
+    ...post,
+    author: sanitizeUser(post.author),
+    comments: post.comments.map((comment) => ({
+      ...comment,
+      author: sanitizeUser(comment.author),
+    })),
+  };
+
   const session = await getServerAuthSession();
   const canDelete =
     !!session &&
@@ -56,7 +73,7 @@ export default async function PostDetail({ params }) {
 
   return (
     <div className="space-y-6 py-4">
-      <PostViewTracker postId={post.id} />
+      <PostViewTracker postId={hydratedPost.id} />
       <Link href="/posts" className="text-sm font-semibold text-primary">
         ← 게시판 목록
       </Link>
@@ -65,30 +82,30 @@ export default async function PostDetail({ params }) {
           <div className="flex flex-col gap-2">
             <p className="text-sm font-semibold text-primary">게시글</p>
             <h1 className="text-3xl font-bold text-text-primary-light">
-              {post.title}
+              {hydratedPost.title}
             </h1>
           <div className="text-sm text-text-secondary-light">
             <span className="font-semibold text-text-primary-light">
-              {post.author.name}
+              {hydratedPost.author.name}
               <span className="ml-1 hidden text-[11px] text-text-secondary-light sm:inline">
-                #{getUserCode(post.author.id)}
+                #{getUserCode(hydratedPost.author.id)}
               </span>
             </span>{" "}
-            · {formatDateTime(post.createdAt)} (
-            {formatRelativeTime(post.createdAt)}) · 조회{" "}
-            {post.viewCount.toLocaleString()}
+            · {formatDateTime(hydratedPost.createdAt)} (
+            {formatRelativeTime(hydratedPost.createdAt)}) · 조회{" "}
+            {hydratedPost.viewCount.toLocaleString()}
           </div>
-          {post.tags && (
+          {hydratedPost.tags && (
             <span className="mt-2 inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              {post.tags}
+              {hydratedPost.tags}
             </span>
           )}
         </div>
-          {canDelete && <PostDeleteButton postId={post.id} />}
+          {canDelete && <PostDeleteButton postId={hydratedPost.id} />}
         </div>
-        <PostPreferences postId={post.id} />
+        <PostPreferences postId={hydratedPost.id} />
         <div className="prose prose-sm mt-6 max-w-none text-text-primary-light">
-          {post.content.split("\n").map((line, index) => (
+          {hydratedPost.content.split("\n").map((line, index) => (
             <p key={index}>{line || <>&nbsp;</>}</p>
           ))}
         </div>
@@ -96,15 +113,15 @@ export default async function PostDetail({ params }) {
       <section className="grid gap-6 rounded-3xl border border-border-light/70 bg-surface-light p-6 shadow-sm lg:grid-cols-2">
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-text-primary-light">
-            댓글 ({post.comments.length})
+            댓글 ({hydratedPost.comments.length})
           </h2>
-          {post.comments.length === 0 ? (
+          {hydratedPost.comments.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-border-light/70 bg-background-light/50 p-4 text-sm text-text-secondary-light">
               첫 댓글을 남겨보세요!
             </p>
           ) : (
             <ul className="space-y-4">
-              {post.comments.map((comment) => (
+              {hydratedPost.comments.map((comment) => (
                 <li
                   key={comment.id}
                   className="rounded-2xl border border-border-light/60 bg-background-light/80 p-4"
@@ -136,7 +153,7 @@ export default async function PostDetail({ params }) {
           <h3 className="text-lg font-semibold text-text-primary-light">
             댓글 작성
           </h3>
-          <PostCommentForm postId={post.id} />
+          <PostCommentForm postId={hydratedPost.id} />
         </div>
       </section>
     </div>

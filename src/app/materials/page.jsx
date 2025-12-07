@@ -23,9 +23,10 @@ function normalizeParam(param) {
 }
 
 export default async function MaterialsPage({ searchParams }) {
-  const keywordRaw = normalizeParam(searchParams?.keyword);
+  const resolvedSearchParams = await searchParams;
+  const keywordRaw = normalizeParam(resolvedSearchParams?.keyword);
   const keyword = keywordRaw.trim();
-  const sortRaw = normalizeParam(searchParams?.sort);
+  const sortRaw = normalizeParam(resolvedSearchParams?.sort);
   const sort = sortRaw === "popular" ? "popular" : "latest";
 
   const [materials, popularMaterials] = await Promise.all([

@@ -31,13 +31,13 @@ export function MaterialSearchBar() {
         name="keyword"
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}
-        placeholder="강의명, 과제명, 주제 등으로 검색"
+        placeholder="강의명, 과제명 등으로 자료 검색"
         className="w-full rounded-xl border border-transparent bg-background-light px-12 py-3 text-base text-text-primary-light shadow-inner shadow-black/5 outline-none ring-primary/0 transition placeholder:text-text-secondary-light focus:border-primary/50 focus:ring-2 focus:ring-primary/50"
       />
       <button
         type="submit"
         className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary-light transition hover:text-primary"
-        aria-label="자료 검색"
+        aria-label="검색"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

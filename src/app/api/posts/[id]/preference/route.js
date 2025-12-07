@@ -33,7 +33,8 @@ async function computePostPreference(postId, userId) {
 }
 
 export async function GET(_request, { params }) {
-  const postId = Number(params.id);
+  const resolvedParams = await params;
+  const postId = Number(resolvedParams?.id);
   if (Number.isNaN(postId)) {
     return NextResponse.json(
       { message: "잘못된 게시글 ID 입니다." },
@@ -55,7 +56,8 @@ export async function POST(request, { params }) {
     );
   }
 
-  const postId = Number(params.id);
+  const resolvedParams = await params;
+  const postId = Number(resolvedParams?.id);
   if (Number.isNaN(postId)) {
     return NextResponse.json(
       { message: "잘못된 게시글 ID 입니다." },
