@@ -35,7 +35,8 @@ async function computeMaterialPreference(materialId, userId) {
 }
 
 export async function GET(_request, { params }) {
-  const materialId = Number(params.id);
+  const resolvedParams = await params;
+  const materialId = Number(resolvedParams?.id);
   if (Number.isNaN(materialId)) {
     return NextResponse.json(
       { message: "잘못된 자료 ID 입니다." },
@@ -57,7 +58,8 @@ export async function POST(request, { params }) {
     );
   }
 
-  const materialId = Number(params.id);
+  const resolvedParams = await params;
+  const materialId = Number(resolvedParams?.id);
   if (Number.isNaN(materialId)) {
     return NextResponse.json(
       { message: "잘못된 자료 ID 입니다." },

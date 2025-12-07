@@ -9,7 +9,8 @@ export async function DELETE(_request, { params }) {
     return NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 });
   }
 
-  const materialId = Number(params.id);
+  const resolvedParams = await params;
+  const materialId = Number(resolvedParams?.id);
   if (Number.isNaN(materialId)) {
     return NextResponse.json(
       { message: "잘못된 자료 ID 입니다." },

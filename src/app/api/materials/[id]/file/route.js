@@ -4,7 +4,8 @@ import path from "node:path";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request, { params }) {
-  const materialId = Number(params.id);
+  const resolvedParams = await params;
+  const materialId = Number(resolvedParams?.id);
   if (Number.isNaN(materialId)) {
     return NextResponse.json({ message: "잘못된 자료 ID 입니다." }, { status: 400 });
   }
