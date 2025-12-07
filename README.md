@@ -11,14 +11,14 @@
 
 ---
 
-### ✨ 핵심 기능
-- **자료 검색/다운로드**: 키워드 검색, 좋아요/즐겨찾기, 다운로드 집계.
-- **자료 업로드**: PDF/PNG/JPG 3MB 이하 업로드, 과목/카테고리/설명 등록.
+### ✨ 핵심 기능 (현재 버전)
+- **자료 목록/검색/정렬**: `/materials`에서 키워드 검색, 최신·인기 정렬, 즐겨찾기/다운로드 집계 확인.
+- **자료 업로드**: PDF/PNG/JPG 3MB 이하 업로드, 과목/카테고리/설명 등록 및 미리보기.
 - **게시판**: 카테고리별 글 작성, 댓글, 좋아요/즐겨찾기, 조회수 집계.
-- **알림**: 좋아요/즐겨찾기 등 알림을 벨 아이콘으로 확인·읽음 처리.
 - **프로필 관리**: 이름/학번/학년 수정, 계정 삭제.
 - **학과 정보 허브**: 학과 개요, 학년별 교육과정, 추천 과목/활동, 학칙/수강편람 링크.
 - **온보딩·카운트다운**: 첫 방문 안내 모달과 학사 일정 카운트다운 제공.
+> 알림 벨 기능은 최신 버전에서 제거되었습니다.
 
 ---
 
@@ -50,12 +50,12 @@ src/
  │   ├─ login/, register/      # 인증 페이지
  │   ├─ upload/                # 자료 업로드
  │   ├─ posts/, posts/[id]/    # 게시판 목록/상세
- │   ├─ materials/[id]/        # 자료 상세/댓글/다운로드
+ │   ├─ materials/, materials/[id]/ # 자료 목록/상세/댓글/다운로드
  │   ├─ profile/               # 프로필 및 계정 삭제
  │   ├─ department/            # 학과 정보 허브
  │   └─ api/                   # auth, upload, materials, posts, comments,
- │                             # notifications, profile 등 Route Handlers
- ├─ components/                # Header/Footer, 검색/업로드/작성 폼, 알림,
+ │                             # profile 등 Route Handlers
+ ├─ components/                # Header/Footer, 검색/업로드/작성 폼,
  │                             # 카운트다운, 통계, 카드 등 UI 컴포넌트
  ├─ data/department.js         # 학과/교육과정 정적 데이터
  ├─ lib/                       # Prisma, Auth, 포맷터, 암호화, 자료/게시판 헬퍼
@@ -79,19 +79,88 @@ scripts/
 | `src/app/layout.jsx` | 공통 레이아웃, 폰트/파비콘, 메타 태그 |
 | `src/app/page.jsx` | 메인 히어로, 자료 검색, 통계, 업로드 CTA |
 | `src/app/posts/*.jsx` | 게시판 목록/상세, 조회수·선호도 API |
+| `src/app/materials/page.jsx` | 자료 목록/검색/정렬 페이지 |
 | `src/app/materials/[id]/page.jsx` | 자료 상세, 다운로드/댓글/좋아요/즐겨찾기 |
-| `src/app/api/*` | 인증, 업로드, 자료/게시판/댓글, 알림, 프로필 등 API |
+| `src/app/api/*` | 인증, 업로드, 자료/게시판/댓글, 프로필 등 API |
 | `src/app/department/page.jsx` | 학과 정보/교육과정/추천 정보 |
-| `src/components/header.jsx` | 네비게이션(홈/자료/게시판/학과), 알림, 업로드 버튼 |
+| `src/components/header.jsx` | 네비게이션(홈/자료/게시판/학과), 업로드 버튼 |
 | `src/components/material-search-bar.jsx` | 자료 검색 입력 및 이동 |
 | `src/components/upload-form.jsx` | 자료 업로드 폼 |
 | `src/components/create-post-form.jsx` | 게시글 작성 폼 |
-| `src/components/notification-bell.jsx` | 알림 조회/읽음 처리 UI |
 | `src/components/countdown-timer.jsx` | 학사 일정 카운트다운 |
 | `src/lib/materials.js`, `src/lib/posts.js` | 자료/게시판 조회 및 통계 헬퍼 |
 | `scripts/seed.mjs` | 초기 계정·자료·게시글 데이터 생성 |
 
 ---
+
+### 👥 기여자 발표 자료
+- 김현민: `docs/presentations/presentation-kim-hyunmin.md`
+- 최준혁: `docs/presentations/presentation-choi-junhyeok.md`
+- 정찬호: `docs/presentations/presentation-jeong-chanho.md`
+- 이은우: `docs/presentations/presentation-lee-eunwoo.md`
+- 전체 문서 인덱스: `docs/README.md`
+
+---
+
+### 🧑‍💻 로컬 개발 가이드
+1) 저장소 받기
+   ```bash
+   git clone https://github.com/kim0040/Compile-Room.git
+   cd Compile-Room
+   ```
+2) 환경 변수 작성: `.env.local`
+   ```
+   DATABASE_URL="file:./dev.db"
+   AUTH_SECRET="랜덤_32자_이상"
+   NEXTAUTH_URL="http://localhost:3000"
+   ```
+3) 의존성 설치 및 DB 준비
+   ```bash
+   npm ci
+   npx prisma migrate dev
+   npm run seed   # 샘플 데이터
+   ```
+4) 개발 서버
+   ```bash
+   npm run dev    # http://localhost:3000
+   ```
+5) 품질 확인
+   ```bash
+   npm run lint   # 필요 시
+   npm run build  # 배포 전 빌드 검증
+   ```
+
+### 🚀 서버(프로덕션) 배포 가이드
+1) 시스템 준비
+   ```bash
+   # Node 20.x + PM2 예시
+   curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+   apt-get install -y nodejs build-essential
+   npm install -g pm2
+   ```
+2) 코드 배포
+   ```bash
+   git clone https://github.com/kim0040/Compile-Room.git /home/web/compile-room
+   cd /home/web/compile-room
+   cp .env.example .env.local   # 예제가 없으면 직접 작성
+   # .env.local: NEXTAUTH_URL을 실제 도메인으로, DATABASE_URL을 운영 DB로 지정
+   npm ci
+   npx prisma migrate deploy
+   npm run build
+   ```
+3) 실행 (PM2)
+   ```bash
+   pm2 start "npm run start" --name compile-room
+   pm2 save
+   pm2 startup   # 출력 명령어 실행해 부팅 시 자동 시작
+   ```
+4) 역방향 프록시/HTTPS (선택)
+   - Nginx에서 `proxy_pass http://127.0.0.1:3000;` 설정
+   - `certbot --nginx -d your-domain.com`으로 Let’s Encrypt 인증서 발급
+5) 배포 후 확인
+   - `pm2 status`, `pm2 logs compile-room`
+   - `/api/materials?keyword=` 200 응답 여부
+   - `/materials`, `/posts` UI 정상 로딩
 
 ### ⚙️ 환경 변수 (.env)
 | 키 | 설명 |

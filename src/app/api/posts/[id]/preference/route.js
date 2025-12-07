@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-import { createNotification } from "@/lib/notifications";
 
 /**
  * 게시글 좋아요/즐겨찾기 집계 헬퍼
@@ -84,8 +83,6 @@ export async function POST(request, { params }) {
     );
   }
 
-  let likeAdded = false;
-  let favoriteAdded = false;
   try {
     await prisma.$transaction(async (tx) => {
       if (kind === "like") {
@@ -98,7 +95,6 @@ export async function POST(request, { params }) {
           await tx.postLike.create({
             data: { postId, userId: session.user.id },
           });
-          likeAdded = true;
         }
       } else {
         const existing = await tx.postFavorite.findUnique({
@@ -110,7 +106,6 @@ export async function POST(request, { params }) {
           await tx.postFavorite.create({
             data: { postId, userId: session.user.id },
           });
-          favoriteAdded = true;
         }
       }
     });
@@ -122,24 +117,6 @@ export async function POST(request, { params }) {
   }
 
   const data = await computePostPreference(postId, session.user.id);
-
-  const actorName = session.user.name ?? "팀원";
-  if (likeAdded && post.authorId !== session.user.id) {
-    await createNotification({
-      userId: post.authorId,
-      title: `${actorName}님이 내 게시글에 좋아요를 남겼어요`,
-      body: `"${post.title}"`,
-      link: `/posts/${post.id}`,
-    });
-  }
-  if (favoriteAdded && post.authorId !== session.user.id) {
-    await createNotification({
-      userId: post.authorId,
-      title: `${actorName}님이 게시글을 즐겨찾기에 추가했어요`,
-      body: `"${post.title}"`,
-      link: `/posts/${post.id}`,
-    });
-  }
 
   return NextResponse.json(data);
 }

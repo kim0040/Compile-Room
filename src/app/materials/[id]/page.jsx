@@ -50,7 +50,7 @@ export default async function MaterialDetail({ params }) {
   return (
     <div className="space-y-8 py-4">
       <Link
-        href="/"
+        href="/materials"
         className="text-sm font-semibold text-primary hover:underline"
       >
         ← 목록으로 돌아가기

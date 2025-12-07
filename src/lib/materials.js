@@ -30,6 +30,34 @@ function sanitizeMaterial(material) {
   return withAuthor;
 }
 
+export async function searchMaterials({ keyword, sort = "latest" } = {}) {
+  const where = keyword
+    ? {
+        OR: [
+          { title: { contains: keyword } },
+          { description: { contains: keyword } },
+          { subject: { contains: keyword } },
+        ],
+      }
+    : undefined;
+
+  const orderBy =
+    sort === "popular"
+      ? [
+          { favoriteCount: "desc" },
+          { downloadCount: "desc" },
+          { createdAt: "desc" },
+        ]
+      : [{ createdAt: "desc" }];
+
+  const materials = await prisma.material.findMany({
+    where,
+    include: baseMaterialInclude,
+    orderBy,
+  });
+  return materials.map((material) => sanitizeMaterial(material));
+}
+
 export async function getLatestMaterials(keyword, take = 6) {
   // 최신 자료 리스트 + 검색어 필터 (subject/title/description)
   const materials = await prisma.material.findMany({

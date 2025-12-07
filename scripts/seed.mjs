@@ -133,7 +133,7 @@ const sampleMaterials = [
     authorKey: "eunwoo",
     title: "OOP 5주차 실습 가이드",
     description:
-      "SOLID 원칙과 리팩터링 예제를 정리했습니다. 실습 코드 템플릿 포함.",
+      "SOLID 원칙과 리팩터링 가이드를 정리했습니다. 실습 코드 템플릿 포함.",
     subject: "객체지향프로그래밍",
     type: MaterialType.ASSIGNMENT,
     fileName: "oop-week5.pdf",

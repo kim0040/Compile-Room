@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { NotificationBell } from "@/components/notification-bell";
 import { getUserCode } from "@/lib/user-tag";
 import { signOutSafely } from "@/lib/client-signout";
 
@@ -78,7 +77,6 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          {isAuth && <NotificationBell />}
           <Link
             href="/upload"
             className="hidden rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/20 sm:inline-block"

@@ -66,19 +66,12 @@ export default async function PostsPage({ searchParams }) {
                 key={post.id}
                 className="rounded-3xl border border-border-light/60 bg-surface-light p-5 shadow-sm transition hover:border-primary/40 hover:shadow-md"
               >
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link
-                    href={`/posts/${post.id}`}
-                    className="text-xl font-semibold text-text-primary-light hover:text-primary"
-                  >
-                    {post.title}
-                  </Link>
-                  {post.isExample && (
-                    <span className="rounded-full bg-amber-100 px-3 py-0.5 text-xs font-semibold text-amber-700">
-                      (예제)
-                    </span>
-                  )}
-                </div>
+                <Link
+                  href={`/posts/${post.id}`}
+                  className="text-xl font-semibold text-text-primary-light hover:text-primary"
+                >
+                  {post.title}
+                </Link>
                 <p className="mt-2 line-clamp-2 text-sm text-text-secondary-light">
                   {post.content}
                 </p>

@@ -62,16 +62,9 @@ export default async function PostDetail({ params }) {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-2">
             <p className="text-sm font-semibold text-primary">게시글</p>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-bold text-text-primary-light">
-                {post.title}
-              </h1>
-              {post.isExample && (
-                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                  (예제)
-                </span>
-              )}
-            </div>
+            <h1 className="text-3xl font-bold text-text-primary-light">
+              {post.title}
+            </h1>
           <div className="text-sm text-text-secondary-light">
             <span className="font-semibold text-text-primary-light">
               {post.author.name}
