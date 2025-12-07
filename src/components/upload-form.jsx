@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-const SUBJECTS = ["자료구조", "알고리즘", "객체지향프로그래밍", "컴퓨터구조", "머신러닝"];
+const SUBJECTS = ["자료구조", "알고리즘", "객체지향프로그래밍", "컴퓨터구조", "머신러닝", "기타"];
 const MATERIAL_TYPES = [
   { label: "강의 자료", value: "LECTURE" },
   { label: "과제 예시", value: "ASSIGNMENT" },

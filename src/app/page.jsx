@@ -58,17 +58,12 @@ export default async function Home() {
             favorites={stats.totalFavorites}
           />
           <CountdownTimer targetDate={FALL_TERM_END} />
-          <div className="flex flex-wrap gap-3 text-sm text-text-secondary-light">
-            <span className="rounded-full bg-primary/10 px-4 py-1 font-medium text-primary">
-              자료 탐색 시작하기
-            </span>
-            <Link
-              href="/materials"
-              className="rounded-full bg-background-light px-4 py-1 font-semibold text-text-primary-light transition hover:text-primary"
-            >
-              자료 목록으로 이동 →
-            </Link>
-          </div>
+          <Link
+            href="/materials"
+            className="inline-flex w-fit items-center gap-2 rounded-full bg-background-light px-4 py-2 text-sm font-semibold text-text-primary-light transition hover:text-primary"
+          >
+            자료 목록으로 이동 →
+          </Link>
         </div>
         <div className="relative hidden rounded-2xl border border-border-light/70 bg-background-light/60 p-6 lg:flex lg:flex-col lg:gap-4">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
