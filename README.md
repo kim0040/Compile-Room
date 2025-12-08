@@ -150,10 +150,14 @@ scripts/
    ```
 3) 실행 (PM2)
    ```bash
-   pm2 start "npm run start" --name compile-room
+   # 프로젝트 경로를 --cwd로 명시해 잘못된 위치에서 기동되는 문제 방지
+   pm2 start npm --name compile-room --cwd /home/web/compile-room --time -- run start -- --hostname 0.0.0.0 --port 3000
    pm2 save
-   pm2 startup   # 출력 명령어 실행해 부팅 시 자동 시작
+   pm2 startup systemd -u <사용자명> --hp /home/<사용자명>   # 출력되는 명령어 실행해 부팅 시 자동 시작
    ```
+   - 재배포/환경변수 변경 후: `pm2 restart compile-room --update-env`
+   - 경로를 잘못 잡아서 뜨지 않을 때: `pm2 delete compile-room && pm2 start ...`(위 명령 재실행)
+   - 동작 확인/로그: `pm2 status`, `pm2 logs compile-room --lines 200`
 4) 역방향 프록시/HTTPS (선택)
    - Nginx에서 `proxy_pass http://127.0.0.1:3000;` 설정
    - `certbot --nginx -d your-domain.com`으로 Let’s Encrypt 인증서 발급

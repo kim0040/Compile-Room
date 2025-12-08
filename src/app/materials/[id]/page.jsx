@@ -9,6 +9,7 @@ import { MaterialPreferences } from "@/components/material-preferences";
 import { getServerAuthSession } from "@/lib/auth";
 import { MaterialDeleteButton } from "@/components/material-delete-button";
 import { getUserCode } from "@/lib/user-tag";
+import { CommentDeleteButton } from "@/components/comment-delete-button";
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
@@ -42,10 +43,11 @@ export default async function MaterialDetail({ params }) {
     notFound();
   }
   const session = await getServerAuthSession();
+  const currentUserId = session?.user?.id;
+  const isAdmin = session?.user?.role === "admin";
   const canDelete =
     !!session &&
-    (session.user?.id === material.authorId ||
-      session.user?.role === "admin");
+    (currentUserId === material.authorId || isAdmin);
 
   return (
     <div className="space-y-8 py-4">
@@ -136,31 +138,41 @@ export default async function MaterialDetail({ params }) {
             </p>
           ) : (
             <ul className="space-y-4">
-              {material.comments.map((comment) => (
-                <li
-                  key={comment.id}
-                  className="rounded-2xl border border-border-light/60 bg-background-light/80 p-4"
-                >
-                  <div className="flex items-center gap-2 text-sm font-semibold text-text-primary-light">
-                    <span>
-                      {comment.author.name}
-                      <span className="ml-1 hidden text-[11px] text-text-secondary-light sm:inline">
-                        #{getUserCode(comment.author.id)}
+              {material.comments.map((comment) => {
+                const canDeleteComment =
+                  !!currentUserId &&
+                  (currentUserId === comment.authorId || isAdmin);
+                return (
+                  <li
+                    key={comment.id}
+                    className="rounded-2xl border border-border-light/60 bg-background-light/80 p-4"
+                  >
+                    <div className="flex items-center gap-2 text-sm font-semibold text-text-primary-light">
+                      <span>
+                        {comment.author.name}
+                        <span className="ml-1 hidden text-[11px] text-text-secondary-light sm:inline">
+                          #{getUserCode(comment.author.id)}
+                        </span>
                       </span>
-                    </span>
-                    <span className="text-xs text-text-secondary-light">
-                      {comment.author.classYear ?? ""}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm text-text-secondary-light">
-                    {comment.content}
-                  </p>
-                  <p className="mt-2 text-xs text-text-secondary-light/70">
-                    {formatDateTime(comment.createdAt)} ·{" "}
-                    {formatRelativeTime(comment.createdAt)}
-                  </p>
-                </li>
-              ))}
+                      <span className="text-xs text-text-secondary-light">
+                        {comment.author.classYear ?? ""}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm text-text-secondary-light">
+                      {comment.content}
+                    </p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-xs text-text-secondary-light/70">
+                        {formatDateTime(comment.createdAt)} ·{" "}
+                        {formatRelativeTime(comment.createdAt)}
+                      </p>
+                      {canDeleteComment && (
+                        <CommentDeleteButton commentId={comment.id} />
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

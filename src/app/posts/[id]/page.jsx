@@ -9,6 +9,7 @@ import { PostDeleteButton } from "@/components/post-delete-button";
 import { PostCommentForm } from "@/components/post-comment-form";
 import { getUserCode } from "@/lib/user-tag";
 import { decryptClassYear } from "@/lib/personal-data";
+import { CommentDeleteButton } from "@/components/comment-delete-button";
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
@@ -66,10 +67,11 @@ export default async function PostDetail({ params }) {
   };
 
   const session = await getServerAuthSession();
+  const currentUserId = session?.user?.id;
+  const isAdmin = session?.user?.role === "admin";
   const canDelete =
     !!session &&
-    (session.user?.id === post.authorId ||
-      session.user?.role === "admin");
+    (currentUserId === post.authorId || isAdmin);
 
   return (
     <div className="space-y-6 py-4">
@@ -121,31 +123,44 @@ export default async function PostDetail({ params }) {
             </p>
           ) : (
             <ul className="space-y-4">
-              {hydratedPost.comments.map((comment) => (
-                <li
-                  key={comment.id}
-                  className="rounded-2xl border border-border-light/60 bg-background-light/80 p-4"
-                >
-                  <div className="flex items-center gap-2 text-sm font-semibold text-text-primary-light">
-                    <span>
-                      {comment.author.name}
-                      <span className="ml-1 hidden text-[11px] text-text-secondary-light sm:inline">
-                        #{getUserCode(comment.author.id)}
+              {hydratedPost.comments.map((comment) => {
+                const canDeleteComment =
+                  !!currentUserId &&
+                  (currentUserId === comment.authorId || isAdmin);
+                return (
+                  <li
+                    key={comment.id}
+                    className="rounded-2xl border border-border-light/60 bg-background-light/80 p-4"
+                  >
+                    <div className="flex items-center gap-2 text-sm font-semibold text-text-primary-light">
+                      <span>
+                        {comment.author.name}
+                        <span className="ml-1 hidden text-[11px] text-text-secondary-light sm:inline">
+                          #{getUserCode(comment.author.id)}
+                        </span>
                       </span>
-                    </span>
-                    <span className="text-xs text-text-secondary-light">
-                      {comment.author.classYear ?? ""}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm text-text-secondary-light">
-                    {comment.content}
-                  </p>
-                  <p className="mt-2 text-xs text-text-secondary-light/70">
-                    {formatDateTime(comment.createdAt)} ·{" "}
-                    {formatRelativeTime(comment.createdAt)}
-                  </p>
-                </li>
-              ))}
+                      <span className="text-xs text-text-secondary-light">
+                        {comment.author.classYear ?? ""}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm text-text-secondary-light">
+                      {comment.content}
+                    </p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-xs text-text-secondary-light/70">
+                        {formatDateTime(comment.createdAt)} ·{" "}
+                        {formatRelativeTime(comment.createdAt)}
+                      </p>
+                      {canDeleteComment && (
+                        <CommentDeleteButton
+                          commentId={comment.id}
+                          type="post"
+                        />
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
