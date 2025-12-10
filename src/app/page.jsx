@@ -9,6 +9,9 @@ import { CountdownTimer } from "@/components/countdown-timer";
 
 const FALL_TERM_END = "2025-12-20T00:00:00+09:00";
 
+// 홈 통계가 빌드 캐시로 오래 묶이지 않도록 즉시 재검증한다.
+export const revalidate = 0;
+
 export default async function Home() {
   const stats = await getMaterialStats();
 

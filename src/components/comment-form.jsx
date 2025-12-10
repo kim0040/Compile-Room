@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -11,6 +11,7 @@ export function CommentForm({ materialId }) {
   const [content, setContent] = useState("");
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
+  const isSubmittingRef = useRef(false);
 
   if (!session) {
     return (
@@ -25,32 +26,38 @@ export function CommentForm({ materialId }) {
   }
 
   const submitComment = async () => {
+    if (isSubmittingRef.current) return;
     if (!content.trim()) {
       setError("댓글을 입력해주세요.");
       return;
     }
+    isSubmittingRef.current = true;
     setStatus("loading");
     setError("");
 
-    const response = await fetch("/api/comments", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        content,
-        materialId,
-      }),
-    });
+    try {
+      const response = await fetch("/api/comments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content,
+          materialId,
+        }),
+      });
 
-    if (response.ok) {
-      setStatus("success");
-      setContent("");
-      router.refresh();
-    } else {
-      const data = await response.json().catch(() => ({}));
-      setError(data.message ?? "댓글 저장 중 오류가 발생했습니다.");
-      setStatus("error");
+      if (response.ok) {
+        setStatus("success");
+        setContent("");
+        router.refresh();
+      } else {
+        const data = await response.json().catch(() => ({}));
+        setError(data.message ?? "댓글 저장 중 오류가 발생했습니다.");
+        setStatus("error");
+      }
+    } finally {
+      isSubmittingRef.current = false;
     }
   };
 
@@ -60,7 +67,7 @@ export function CommentForm({ materialId }) {
   };
 
   const handleKeyDown = async (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault();
       await submitComment();
     }
